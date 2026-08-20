@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AdminPageHeader } from '../AdminLayout';
 import { useAdminAuth } from '../AdminAuthContext';
 import { getOrder, listOrderItems, updateOrder, type DbOrder } from '../services/adminService';
+import { sendNotification } from '../../lib/notifyClient';
 
 const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'completed', 'cancelled', 'refunded'];
 const PAYMENT_STATUSES = ['pending', 'paid', 'failed', 'refunded'];
@@ -43,6 +44,7 @@ export const AdminOrderDetailPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const baselineRef = useRef<{ status: string | null; payment: string | null }>({ status: null, payment: null });
 
   useEffect(() => {
     let alive = true;
@@ -53,6 +55,10 @@ export const AdminOrderDetailPage: React.FC = () => {
         setOrder(o);
         setAddress(parseAddress(o?.shipping_address_json));
         setItems(lines);
+        baselineRef.current = {
+          status: o?.status ?? null,
+          payment: o?.payment_status ?? null,
+        };
         if (!o) setError('Order not found');
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : 'Failed to load order');
@@ -75,6 +81,10 @@ export const AdminOrderDetailPage: React.FC = () => {
     setMessage('');
     setError('');
     try {
+      const statusChanged =
+        order.status !== baselineRef.current.status ||
+        order.payment_status !== baselineRef.current.payment;
+
       const updated = await updateOrder(order.id, {
         order_number: order.order_number,
         status: order.status,
@@ -91,7 +101,30 @@ export const AdminOrderDetailPage: React.FC = () => {
       });
       setOrder(updated);
       setAddress(parseAddress(updated.shipping_address_json));
-      setMessage('Order saved');
+
+      if (statusChanged && updated.contact_email) {
+        const notify = await sendNotification({
+          type: 'order_status',
+          email: updated.contact_email,
+          name: [address.firstName, address.lastName].filter(Boolean).join(' ') || undefined,
+          orderId: updated.order_number || updated.id,
+          orderStatus: updated.status || 'updated',
+          paymentStatus: updated.payment_status || undefined,
+          message: updated.notes || undefined,
+        });
+        if (notify.ok) {
+          setMessage('Order saved · status emails sent to customer and admin');
+        } else {
+          setMessage(`Order saved · email warning: ${notify.error || 'notification failed'}`);
+        }
+      } else {
+        setMessage(statusChanged ? 'Order saved (no contact email for status notify)' : 'Order saved');
+      }
+
+      baselineRef.current = {
+        status: updated.status ?? null,
+        payment: updated.payment_status ?? null,
+      };
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Save failed');
     } finally {

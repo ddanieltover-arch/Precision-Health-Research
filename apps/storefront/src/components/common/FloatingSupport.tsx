@@ -11,20 +11,51 @@ import {
 } from 'lucide-react';
 import { useStore } from '../../context/StoreContext';
 import { openSmartsuppChat } from './SmartsuppChat';
+import { persistInquiryLocally, sendNotification } from '../../lib/notifyClient';
 
 export const FloatingSupport: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [inquiryText, setInquiryText] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [ticketId, setTicketId] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const { addToast } = useStore();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inquiryText.trim()) return;
-    setSubmitted(true);
-    addToast('Inquiry Received', 'A laboratory chemist will reply within 4 hours.', 'success');
-    setInquiryText('');
+    if (!inquiryText.trim() || !email.trim()) return;
+    setSubmitting(true);
+    try {
+      const result = await sendNotification({
+        type: 'quick_inquiry',
+        name: name.trim() || undefined,
+        email: email.trim(),
+        message: inquiryText.trim(),
+      });
+      if (!result.ok) {
+        addToast('Send Failed', result.error || 'Could not deliver inquiry emails.', 'warning');
+        return;
+      }
+      const ref = result.ticketId || `PHR-Q-${Date.now().toString().slice(-4)}`;
+      persistInquiryLocally({
+        name: name.trim() || 'Quick inquiry',
+        email: email.trim(),
+        subject: 'Quick compound inquiry',
+        message: inquiryText.trim(),
+        ticketId: ref,
+      });
+      setTicketId(ref);
+      setSubmitted(true);
+      setInquiryText('');
+      addToast('Inquiry Received', 'Confirmation emailed to you and our laboratory desk.', 'success');
+    } catch (err) {
+      addToast('Send Failed', err instanceof Error ? err.message : 'Network error', 'warning');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleStartLiveChat = () => {
@@ -135,10 +166,13 @@ export const FloatingSupport: React.FC = () => {
                 <CheckCircle2 className="w-6 h-6 text-emerald-600 mx-auto" />
                 <h5 className="font-bold text-emerald-900">Message Dispatched</h5>
                 <p className="text-[11px] text-emerald-800">
-                  Our scientific staff will respond to your email or WhatsApp within 4 business hours.
+                  Ticket <strong>{ticketId}</strong> emailed to you and our scientific staff.
                 </p>
                 <button
-                  onClick={() => setSubmitted(false)}
+                  onClick={() => {
+                    setSubmitted(false);
+                    setTicketId('');
+                  }}
                   className="text-[11px] font-bold text-emerald-900 underline"
                 >
                   Send another inquiry
@@ -149,6 +183,21 @@ export const FloatingSupport: React.FC = () => {
                 <label className="font-bold text-slate-700 block text-[11px]">
                   Direct Compound Inquiry
                 </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name (optional)"
+                  className="w-full text-xs p-2.5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-[#335e90]"
+                />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email for reply *"
+                  className="w-full text-xs p-2.5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-[#335e90]"
+                />
                 <textarea
                   rows={3}
                   required
@@ -159,9 +208,10 @@ export const FloatingSupport: React.FC = () => {
                 />
                 <button
                   type="submit"
-                  className="w-full py-2.5 bg-[#335e90] hover:bg-[#264a73] text-white rounded-xl font-bold uppercase tracking-wider text-[11px] flex items-center justify-center gap-1.5 shadow-sm transition-all"
+                  disabled={submitting}
+                  className="w-full py-2.5 bg-[#335e90] hover:bg-[#264a73] disabled:opacity-60 text-white rounded-xl font-bold uppercase tracking-wider text-[11px] flex items-center justify-center gap-1.5 shadow-sm transition-all"
                 >
-                  <span>Dispatch Message</span>
+                  <span>{submitting ? 'Sending…' : 'Dispatch Message'}</span>
                   <Send className="w-3.5 h-3.5" />
                 </button>
               </form>

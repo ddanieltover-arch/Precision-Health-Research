@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
+import { sendNotification } from '../../lib/notifyClient';
 import { 
   FlaskConical, 
   Mail, 
@@ -18,15 +19,29 @@ import {
 export const Footer: React.FC = () => {
   const { addToast } = useStore();
   const [emailInput, setEmailInput] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleNewsletter = (e: React.FormEvent) => {
+  const handleNewsletter = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!emailInput.includes('@')) {
+    const email = emailInput.trim();
+    if (!email.includes('@')) {
       addToast('Invalid Email', 'Please enter a valid academic/research email address.', 'warning');
       return;
     }
-    addToast('Subscribed', 'You will receive batch synthesis updates and new compound alerts.', 'success');
-    setEmailInput('');
+    setSubmitting(true);
+    try {
+      const result = await sendNotification({ type: 'newsletter', email });
+      if (!result.ok) {
+        addToast('Subscription Failed', result.error || 'Could not send confirmation emails.', 'warning');
+        return;
+      }
+      addToast('Subscribed', 'Confirmation emailed to you and our laboratory desk.', 'success');
+      setEmailInput('');
+    } catch (err) {
+      addToast('Subscription Failed', err instanceof Error ? err.message : 'Network error', 'warning');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -136,9 +151,10 @@ export const Footer: React.FC = () => {
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2.5 bg-[#335e90] hover:bg-[#264a73] text-white rounded-xl text-xs font-bold transition-colors shrink-0 flex items-center gap-1"
+                  disabled={submitting}
+                  className="px-4 py-2.5 bg-[#335e90] hover:bg-[#264a73] disabled:opacity-60 text-white rounded-xl text-xs font-bold transition-colors shrink-0 flex items-center gap-1"
                 >
-                  <span>Join</span>
+                  <span>{submitting ? '…' : 'Join'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </form>

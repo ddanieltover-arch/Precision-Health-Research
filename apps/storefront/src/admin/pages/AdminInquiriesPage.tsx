@@ -30,28 +30,9 @@ function writeInquiries(rows: Inquiry[]) {
 /** Inquiries queue — local store until contact form posts to Supabase. */
 export const AdminInquiriesPage: React.FC = () => {
   const [rows, setRows] = useState<Inquiry[]>([]);
-  const [seeded, setSeeded] = useState(false);
 
   useEffect(() => {
-    const existing = readInquiries();
-    if (existing.length === 0) {
-      const demo: Inquiry[] = [
-        {
-          id: crypto.randomUUID(),
-          name: 'Lab Coordinator',
-          email: 'research@example.ac.uk',
-          subject: 'Bulk BPC-157 quote',
-          message: 'Please quote 50 × 10mg vials with COAs for Q3 study.',
-          status: 'NEW',
-          createdAt: new Date().toISOString(),
-        },
-      ];
-      writeInquiries(demo);
-      setRows(demo);
-      setSeeded(true);
-    } else {
-      setRows(existing);
-    }
+    setRows(readInquiries());
   }, []);
 
   const updateStatus = (id: string, status: Inquiry['status']) => {
@@ -67,11 +48,9 @@ export const AdminInquiriesPage: React.FC = () => {
         subtitle="Contact / compound inquiry queue"
       />
 
-      {seeded && (
-        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs text-sky-900">
-          Seeded a sample inquiry. Wire the storefront contact form to persist here (or to Supabase) for live intake.
-        </div>
-      )}
+      <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs text-sky-900">
+        Live intake from Contact and Lab Support forms. Each submission emails the researcher and {`info@ph-research.store`}.
+      </div>
 
       <div className="rounded-2xl border border-[var(--brand-border)] bg-white overflow-hidden">
         <table className="w-full text-left text-xs">

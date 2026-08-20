@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
+import { persistInquiryLocally, sendNotification } from '../../lib/notifyClient';
 import { 
   FlaskConical, 
   ShieldCheck, 
@@ -213,11 +214,41 @@ export const ContactView: React.FC = () => {
   const { addToast } = useStore();
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [sent, setSent] = useState(false);
+  const [ticketId, setTicketId] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
-    addToast('Message Sent', 'Thank you. Our laboratory support team will respond within 4 hours.', 'success');
+    setSubmitting(true);
+    try {
+      const result = await sendNotification({
+        type: 'contact',
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject.trim() || 'Analytical inquiry',
+        message: formData.message.trim(),
+      });
+      if (!result.ok) {
+        addToast('Send Failed', result.error || 'Could not deliver your inquiry emails.', 'warning');
+        return;
+      }
+      const ref = result.ticketId || `PHR-${Date.now().toString().slice(-4)}`;
+      persistInquiryLocally({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        subject: formData.subject.trim() || 'Analytical inquiry',
+        message: formData.message.trim(),
+        ticketId: ref,
+      });
+      setTicketId(ref);
+      setSent(true);
+      setFormData({ name: '', email: '', subject: '', message: '' });
+      addToast('Message Sent', 'Confirmation emailed to you and our laboratory desk.', 'success');
+    } catch (err) {
+      addToast('Send Failed', err instanceof Error ? err.message : 'Network error', 'warning');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -287,10 +318,14 @@ export const ContactView: React.FC = () => {
               </div>
               <h3 className="text-lg font-bold text-slate-900">Message Received</h3>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Your research inquiry has been assigned ticket reference #PHR-{(Math.random()*10000).toFixed(0)}. A specialist will respond shortly.
+                Your research inquiry has been assigned ticket reference <strong>#{ticketId || 'PHR'}</strong>.
+                Confirmation emails were sent to you and our laboratory support team.
               </p>
               <button
-                onClick={() => setSent(false)}
+                onClick={() => {
+                  setSent(false);
+                  setTicketId('');
+                }}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl"
               >
                 Send Another Message
@@ -353,9 +388,10 @@ export const ContactView: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full py-3 bg-[#335e90] hover:bg-[#264a73] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-[#335e90]/25 transition-all"
+                disabled={submitting}
+                className="w-full py-3 bg-[#335e90] hover:bg-[#264a73] disabled:opacity-60 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-[#335e90]/25 transition-all"
               >
-                <span>Submit Inquiry</span>
+                <span>{submitting ? 'Sending…' : 'Submit Inquiry'}</span>
                 <Send className="w-4 h-4" />
               </button>
             </form>

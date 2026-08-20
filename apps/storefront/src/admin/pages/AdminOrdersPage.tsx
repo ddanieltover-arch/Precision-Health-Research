@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AdminPageHeader } from '../AdminLayout';
 import { useAdminAuth } from '../AdminAuthContext';
 import { listOrders, updateOrder, type DbOrder } from '../services/adminService';
+import { sendNotification } from '../../lib/notifyClient';
 
 const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'completed', 'cancelled', 'refunded'];
 
@@ -35,6 +36,18 @@ export const AdminOrdersPage: React.FC = () => {
     try {
       const updated = await updateOrder(order.id, { status });
       setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, ...updated } : o)));
+      if (updated.contact_email) {
+        const notify = await sendNotification({
+          type: 'order_status',
+          email: updated.contact_email,
+          orderId: updated.order_number || updated.id,
+          orderStatus: updated.status || status,
+          paymentStatus: updated.payment_status || undefined,
+        });
+        if (!notify.ok) {
+          setError(`Status saved, but email failed: ${notify.error || 'unknown error'}`);
+        }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Status update failed');
     } finally {

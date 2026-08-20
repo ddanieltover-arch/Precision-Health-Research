@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
+import { sendNotification } from '../../lib/notifyClient';
 import { 
   X, 
   ShieldCheck, 
@@ -35,6 +36,7 @@ export const CheckoutModal: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [copiedBankField, setCopiedBankField] = useState<string | null>(null);
+  const [confirmedTotal, setConfirmedTotal] = useState(0);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -76,22 +78,75 @@ export const CheckoutModal: React.FC = () => {
     setStep('payment');
   };
 
-  const handleFinalOrder = (e: React.FormEvent) => {
+  const handleFinalOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!researchCertified) {
       addToast('Certification Required', 'You must agree to the in-vitro research agreement.', 'warning');
       return;
     }
+    if (cart.length === 0) {
+      addToast('Empty Cart', 'Add compounds before confirming an order.', 'warning');
+      return;
+    }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      const generatedId = `PHR-UK-${Math.floor(100000 + Math.random() * 900000)}`;
-      setOrderId(generatedId);
-      setIsSubmitting(false);
+    const generatedId = `PHR-UK-${Math.floor(100000 + Math.random() * 900000)}`;
+    const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+    const shippingAddress = [
+      fullName,
+      formData.institution,
+      formData.address,
+      formData.city,
+      formData.county,
+      formData.postcode,
+      'United Kingdom',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    const items = cart.map((item) => ({
+      name: item.name,
+      variant: item.variantName || undefined,
+      quantity: item.quantity,
+      unitPrice: item.price,
+      lineTotal: item.price * item.quantity,
+    }));
+
+    try {
+      const result = await sendNotification({
+        type: 'order_confirmation',
+        orderId: generatedId,
+        email: formData.email.trim(),
+        name: fullName,
+        phone: formData.phone.trim() || undefined,
+        institution: formData.institution.trim() || undefined,
+        paymentMethod,
+        shippingMethod: shippingSpeed === 'specialDelivery' ? 'Special Delivery' : 'Tracked 24',
+        shippingAddress,
+        items,
+        subtotal: cartTotal,
+        shippingCost,
+        discount: cryptoDiscount,
+        total: grandTotal,
+        currency: 'GBP',
+      });
+
+      if (!result.ok) {
+        addToast('Order Email Failed', result.error || 'Order was not emailed. Please contact support.', 'warning');
+        setIsSubmitting(false);
+        return;
+      }
+
+      setOrderId(result.orderId || generatedId);
+      setConfirmedTotal(grandTotal);
       setStep('confirmation');
       clearCart();
-      addToast('Order Placed', `Order ${generatedId} submitted successfully!`, 'success');
-    }, 1200);
+      addToast('Order Placed', `Order ${result.orderId || generatedId} emailed to you and our lab desk.`, 'success');
+    } catch (err) {
+      addToast('Order Failed', err instanceof Error ? err.message : 'Network error', 'warning');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
@@ -500,7 +555,7 @@ export const CheckoutModal: React.FC = () => {
               </div>
               <div className="flex items-center justify-between pt-2 border-t border-slate-200 font-bold">
                 <span className="text-slate-700">Total Payable</span>
-                <span className="text-base text-slate-900">{formatPrice(grandTotal)}</span>
+                <span className="text-base text-slate-900">{formatPrice(confirmedTotal || grandTotal)}</span>
               </div>
             </div>
 
@@ -546,7 +601,7 @@ export const CheckoutModal: React.FC = () => {
                   </div>
 
                   <a
-                    href={`mailto:info@ph-research.store?subject=Bank%20Transfer%20Payment%20Details%20-%20${orderId}&body=Hello%20Precision%20Health%20Research,%0D%0A%0D%0AI%20have%20placed%20order%20${orderId}%20for%20the%20amount%20of%20${formatPrice(grandTotal)}.%0D%0A%0D%0APlease%20provide%20the%20UK%20bank%20transfer%20account%20details%20to%20complete%20payment.%0D%0A%0D%0AThank%20you.`}
+                    href={`mailto:info@ph-research.store?subject=Bank%20Transfer%20Payment%20Details%20-%20${orderId}&body=Hello%20Precision%20Health%20Research,%0D%0A%0D%0AI%20have%20placed%20order%20${orderId}%20for%20the%20amount%20of%20${formatPrice(confirmedTotal || grandTotal)}.%0D%0A%0D%0APlease%20provide%20the%20UK%20bank%20transfer%20account%20details%20to%20complete%20payment.%0D%0A%0D%0AThank%20you.`}
                     className="block p-2.5 bg-slate-50 hover:bg-slate-100/80 rounded-lg border border-slate-200 font-mono-code text-[11px] font-bold text-[#335e90] break-all transition-colors"
                   >
                     info@ph-research.store
@@ -560,7 +615,7 @@ export const CheckoutModal: React.FC = () => {
                   </div>
                   <div className="flex justify-between font-semibold">
                     <span>Order Amount:</span>
-                    <span className="font-bold text-slate-900">{formatPrice(grandTotal)}</span>
+                    <span className="font-bold text-slate-900">{formatPrice(confirmedTotal || grandTotal)}</span>
                   </div>
                   <p className="text-[10px] text-slate-600 pt-1 border-t border-sky-200/60 leading-snug">
                     Please quote your Order Reference <strong>{orderId}</strong> in your email. Our team responds promptly with Sort Code and Account Number details. Once transfer is verified, your order will be dispatched via Royal Mail.
@@ -611,7 +666,7 @@ export const CheckoutModal: React.FC = () => {
                 <div className="p-2.5 bg-emerald-100/60 rounded-xl text-[11px] text-emerald-900 space-y-1">
                   <div className="flex justify-between font-semibold">
                     <span>Amount Payable:</span>
-                    <span className="font-bold">{formatPrice(grandTotal)} worth of BTC</span>
+                    <span className="font-bold">{formatPrice(confirmedTotal || grandTotal)} worth of BTC</span>
                   </div>
                   <p className="text-[10px] text-emerald-800 leading-snug">
                     Please send the equivalent BTC payment to the address above using reference <strong>{orderId}</strong>. Once detected on the blockchain (1 confirmation), your order will be packed for cold-chain UK dispatch.
