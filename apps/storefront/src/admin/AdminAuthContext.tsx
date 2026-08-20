@@ -18,8 +18,13 @@ interface AdminAuthContextValue {
 
 const AdminAuthContext = createContext<AdminAuthContextValue | null>(null);
 
-const bootstrapEmail = (import.meta.env.VITE_ADMIN_EMAIL as string) || 'info@ph-research.store';
-const bootstrapPassword = (import.meta.env.VITE_ADMIN_PASSWORD as string) || '';
+function getBootstrapCredentials() {
+  const email =
+    (import.meta.env.VITE_ADMIN_EMAIL as string | undefined)?.trim() ||
+    'info@ph-research.store';
+  const password = (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined)?.trim() || '';
+  return { email, password };
+}
 
 function readSession(): AdminUser | null {
   try {
@@ -50,6 +55,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const login = useCallback(async (email: string, password: string) => {
     const normalized = email.trim().toLowerCase();
+    const { email: bootstrapEmail, password: bootstrapPassword } = getBootstrapCredentials();
 
     // Prefer Supabase Auth when available
     if (supabase) {
