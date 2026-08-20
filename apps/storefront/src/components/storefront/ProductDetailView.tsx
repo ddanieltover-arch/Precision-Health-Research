@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useStore } from '../../context/StoreContext';
 import { PRODUCTS } from '../../data/catalog';
 import { ProductImage } from '../common/ProductImage';
@@ -20,17 +21,38 @@ import {
 } from 'lucide-react';
 
 export const ProductDetailView: React.FC = () => {
+  const { slug } = useParams();
   const { 
     selectedProduct, 
-    setSelectedProduct, 
     setActiveView, 
     addToCart, 
     formatPrice, 
     openCalculatorWithProduct,
-    addToast 
+    addToast,
+    openProductDetail,
   } = useStore();
 
-  if (!selectedProduct) {
+  const product =
+    selectedProduct ||
+    PRODUCTS.find((p) => p.slug === slug || p.id === slug) ||
+    null;
+
+  const [selectedVariantId, setSelectedVariantId] = useState<string>(
+    product?.variants[0]?.id || ''
+  );
+  const [quantity, setQuantity] = useState<number>(1);
+  const [copiedSeq, setCopiedSeq] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
+
+  useEffect(() => {
+    if (!product) return;
+    setSelectedVariantId(product.variants[0]?.id || '');
+    setQuantity(1);
+    setCopiedSeq(false);
+    setIsAdded(false);
+  }, [product?.id]);
+
+  if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
         <p className="text-sm text-slate-500">No compound selected.</p>
@@ -44,26 +66,19 @@ export const ProductDetailView: React.FC = () => {
     );
   }
 
-  const [selectedVariantId, setSelectedVariantId] = useState<string>(
-    selectedProduct.variants[0]?.id || ''
-  );
-  const [quantity, setQuantity] = useState<number>(1);
-  const [copiedSeq, setCopiedSeq] = useState(false);
-  const [isAdded, setIsAdded] = useState(false);
-
-  const currentVariant = selectedProduct.variants.find((v) => v.id === selectedVariantId) || selectedProduct.variants[0];
-  const unitPrice = selectedProduct.basePrice + (currentVariant?.priceModifier || 0);
+  const currentVariant = product.variants.find((v) => v.id === selectedVariantId) || product.variants[0];
+  const unitPrice = product.basePrice + (currentVariant?.priceModifier || 0);
   const totalPrice = unitPrice * quantity;
 
   const handleAddToCart = () => {
-    addToCart(selectedProduct, currentVariant?.id, quantity);
+    addToCart(product, currentVariant?.id, quantity);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 1500);
   };
 
   const copySequence = () => {
-    if (selectedProduct.sequence) {
-      navigator.clipboard.writeText(selectedProduct.sequence);
+    if (product.sequence) {
+      navigator.clipboard.writeText(product.sequence);
       setCopiedSeq(true);
       addToast('Copied', 'Amino acid sequence copied to clipboard', 'info');
       setTimeout(() => setCopiedSeq(false), 2000);
@@ -72,7 +87,7 @@ export const ProductDetailView: React.FC = () => {
 
   // Related products from the same category
   const relatedProducts = PRODUCTS.filter(
-    (p) => p.id !== selectedProduct.id && p.categorySlug === selectedProduct.categorySlug
+    (p) => p.id !== product.id && p.categorySlug === product.categorySlug
   ).slice(0, 3);
 
   return (
@@ -88,9 +103,9 @@ export const ProductDetailView: React.FC = () => {
           <span>Catalog</span>
         </button>
         <span>/</span>
-        <span className="text-slate-700 font-medium">{selectedProduct.category}</span>
+        <span className="text-slate-700 font-medium">{product.category}</span>
         <span>/</span>
-        <span className="text-slate-900 font-bold truncate max-w-xs">{selectedProduct.name}</span>
+        <span className="text-slate-900 font-bold truncate max-w-xs">{product.name}</span>
       </div>
 
       {/* Main Grid: Gallery & Order Panel */}
@@ -103,15 +118,16 @@ export const ProductDetailView: React.FC = () => {
             <div className="absolute top-4 left-4 z-10">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-900/90 backdrop-blur-md text-sky-300 text-xs font-black uppercase tracking-wider shadow-sm">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                HPLC PURITY: {selectedProduct.purity}
+                HPLC PURITY: {product.purity}
               </span>
             </div>
 
             <ProductImage
-              src={selectedProduct.thumbnailUrl}
-              productId={selectedProduct.id}
-              alt={selectedProduct.name}
-              purity={selectedProduct.purity}
+              key={product.id}
+              src={product.thumbnailUrl}
+              productId={product.id}
+              alt={product.name}
+              purity={product.purity}
               priority={true}
               className="w-full h-full object-contain filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.18)] hover:scale-105 transition-transform duration-500"
               containerClassName="w-full h-full"
@@ -142,21 +158,21 @@ export const ProductDetailView: React.FC = () => {
         <div className="lg:col-span-6 space-y-6">
           <div>
             <div className="flex items-center gap-2 text-xs font-bold text-[#335e90] uppercase tracking-wider mb-1.5">
-              <span>{selectedProduct.category}</span>
-              {selectedProduct.casNumber && (
+              <span>{product.category}</span>
+              {product.casNumber && (
                 <>
                   <span>&bull;</span>
-                  <span className="font-mono-code text-slate-500">CAS: {selectedProduct.casNumber}</span>
+                  <span className="font-mono-code text-slate-500">CAS: {product.casNumber}</span>
                 </>
               )}
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-display">
-              {selectedProduct.name}
+              {product.name}
             </h1>
 
             <p className="text-sm text-slate-600 mt-2.5 leading-relaxed">
-              {selectedProduct.description}
+              {product.description}
             </p>
           </div>
 
@@ -166,9 +182,9 @@ export const ProductDetailView: React.FC = () => {
               Select Strength / Quantity Format
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {selectedProduct.variants.map((v) => {
+              {product.variants.map((v) => {
                 const isSelected = selectedVariantId === v.id;
-                const vPrice = selectedProduct.basePrice + v.priceModifier;
+                const vPrice = product.basePrice + v.priceModifier;
                 return (
                   <button
                     key={v.id}
@@ -294,7 +310,7 @@ export const ProductDetailView: React.FC = () => {
             {/* Interactive Tool Actions */}
             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
               <button
-                onClick={() => openCalculatorWithProduct(selectedProduct)}
+                onClick={() => openCalculatorWithProduct(product)}
                 className="py-2 px-3 rounded-xl bg-white hover:bg-sky-50 text-slate-700 hover:text-sky-700 border border-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
               >
                 <Calculator className="w-3.5 h-3.5 text-sky-600" />
@@ -334,7 +350,7 @@ export const ProductDetailView: React.FC = () => {
               CAS Registry Number
             </span>
             <span className="text-sm font-bold text-slate-900 font-mono-code mt-1 block">
-              {selectedProduct.casNumber || 'Confidential / Custom'}
+              {product.casNumber || 'Confidential / Custom'}
             </span>
           </div>
 
@@ -343,7 +359,7 @@ export const ProductDetailView: React.FC = () => {
               Molecular Weight
             </span>
             <span className="text-sm font-bold text-slate-900 font-mono-code mt-1 block">
-              {selectedProduct.molecularWeight || 'N/A'}
+              {product.molecularWeight || 'N/A'}
             </span>
           </div>
 
@@ -352,7 +368,7 @@ export const ProductDetailView: React.FC = () => {
               Verified HPLC Purity
             </span>
             <span className="text-sm font-bold text-emerald-600 font-mono-code mt-1 block">
-              {selectedProduct.purity}
+              {product.purity}
             </span>
           </div>
 
@@ -367,7 +383,7 @@ export const ProductDetailView: React.FC = () => {
         </div>
 
         {/* Amino Acid Sequence block */}
-        {selectedProduct.sequence && (
+        {product.sequence && (
           <div className="p-4 bg-slate-900 text-slate-200 rounded-2xl border border-slate-800 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
@@ -383,7 +399,7 @@ export const ProductDetailView: React.FC = () => {
               </button>
             </div>
             <p className="font-mono-code text-xs text-slate-300 break-all leading-relaxed">
-              {selectedProduct.sequence}
+              {product.sequence}
             </p>
           </div>
         )}
@@ -408,10 +424,7 @@ export const ProductDetailView: React.FC = () => {
             {relatedProducts.map((p) => (
               <div
                 key={p.id}
-                onClick={() => {
-                  setSelectedProduct(p);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
+                onClick={() => openProductDetail(p)}
                 className="p-4 bg-white rounded-2xl border border-slate-200 hover:border-[#335e90]/40 shadow-xs hover:shadow-md cursor-pointer transition-all flex items-center gap-4 group"
               >
                 <ProductImage

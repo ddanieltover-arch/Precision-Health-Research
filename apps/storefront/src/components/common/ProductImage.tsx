@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { FlaskConical } from 'lucide-react';
+import { getProductImageCandidates } from '../../lib/productImages';
 
 interface ProductImageProps {
   src?: string;
@@ -14,24 +15,64 @@ interface ProductImageProps {
 export const ProductImage: React.FC<ProductImageProps> = ({
   src,
   alt,
+  productId,
   className = '',
   containerClassName = '',
   purity,
   priority = false,
 }) => {
+  const candidates = useMemo(() => getProductImageCandidates(src, productId), [src, productId]);
+  const [candidateIndex, setCandidateIndex] = useState(0);
   const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>(
-    src ? 'loading' : 'error'
+    candidates.length ? 'loading' : 'error'
   );
+  const imgRef = useRef<HTMLImageElement>(null);
+  const currentSrc = candidates[candidateIndex];
 
+  // Reset when the product/source changes
   useEffect(() => {
-    setImageState(src ? 'loading' : 'error');
-  }, [src]);
+    setCandidateIndex(0);
+    setImageState(candidates.length ? 'loading' : 'error');
+  }, [src, productId]);
+
+  // Browser cache: image may already be complete before onLoad is attached
+  useEffect(() => {
+    if (!currentSrc) return;
+
+    const frame = requestAnimationFrame(() => {
+      const img = imgRef.current;
+      if (!img) return;
+      if (!img.complete) return;
+      if (img.naturalWidth > 0) {
+        setImageState('loaded');
+        return;
+      }
+      setCandidateIndex((i) => {
+        if (i < candidates.length - 1) return i + 1;
+        setImageState('error');
+        return i;
+      });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [currentSrc, candidates.length]);
 
   const getAbbreviation = (name: string) => {
     const clean = name.replace(/\(.*?\)/g, '').trim();
     const parts = clean.split(/[\s-]+/);
     if (parts[0] && parts[0].length <= 5) return parts[0].toUpperCase();
     return clean.slice(0, 4).toUpperCase();
+  };
+
+  const advanceOrFail = () => {
+    setCandidateIndex((i) => {
+      if (i < candidates.length - 1) {
+        setImageState('loading');
+        return i + 1;
+      }
+      setImageState('error');
+      return i;
+    });
   };
 
   return (
@@ -42,14 +83,17 @@ export const ProductImage: React.FC<ProductImageProps> = ({
         </div>
       )}
 
-      {src && imageState !== 'error' ? (
+      {currentSrc && imageState !== 'error' ? (
         <img
-          src={src}
+          key={currentSrc}
+          ref={imgRef}
+          src={currentSrc}
           alt={alt}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
+          fetchPriority={priority ? 'high' : 'auto'}
           onLoad={() => setImageState('loaded')}
-          onError={() => setImageState('error')}
+          onError={advanceOrFail}
           className={`${className} transition-opacity duration-300 ${
             imageState === 'loaded' ? 'opacity-100' : 'opacity-0'
           }`}
