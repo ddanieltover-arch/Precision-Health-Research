@@ -266,8 +266,8 @@ export const ContactView: React.FC = () => {
               <Phone className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold text-white block">Phone &amp; WhatsApp Support</span>
-                <a href="tel:+17184047594" className="text-emerald-300 hover:underline">
-                  +1 (718) 404-7594
+                <a href="https://wa.me/447723206940" target="_blank" rel="noopener noreferrer" className="text-emerald-300 hover:underline">
+                  +44 7723 206940
                 </a>
               </div>
             </div>

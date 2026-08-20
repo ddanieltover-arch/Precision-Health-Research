@@ -111,7 +111,7 @@ export const FloatingSupport: React.FC = () => {
             {/* Quick Direct Actions */}
             <div className="grid grid-cols-2 gap-2">
               <a
-                href="https://wa.me/447404404759"
+                href="https://wa.me/447723206940"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 font-bold flex items-center justify-center gap-1.5 transition-colors"

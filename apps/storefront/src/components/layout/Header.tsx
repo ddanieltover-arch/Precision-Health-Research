@@ -161,9 +161,9 @@ export const Header: React.FC = () => {
               <span className="hidden lg:inline">info@ph-research.store</span>
             </a>
             <span className="text-slate-600 hidden sm:inline">|</span>
-            <a href="https://wa.me/17184047594" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors hidden sm:flex items-center gap-1">
+            <a href="https://wa.me/447723206940" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors hidden sm:flex items-center gap-1">
               <Phone className="w-3 h-3 text-emerald-400" />
-              <span>+1 (718) 404-7594</span>
+              <span>+44 7723 206940</span>
             </a>
             <span className="text-slate-600">|</span>
             {/* Currency Selector */}
