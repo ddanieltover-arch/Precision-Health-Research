@@ -25,3 +25,21 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
 export type AdminRole = 'SUPER_ADMIN' | 'ADMIN' | 'EDITOR' | 'SALES_MANAGER' | 'READ_ONLY';
 
 export const ADMIN_SESSION_KEY = 'phr_admin_session';
+export const ADMIN_WRITE_KEY = 'phr_admin_write_key';
+
+export function getAdminWriteKey(): string {
+  try {
+    return sessionStorage.getItem(ADMIN_WRITE_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+
+export function setAdminWriteKey(key: string | null) {
+  try {
+    if (!key) sessionStorage.removeItem(ADMIN_WRITE_KEY);
+    else sessionStorage.setItem(ADMIN_WRITE_KEY, key);
+  } catch {
+    /* ignore */
+  }
+}

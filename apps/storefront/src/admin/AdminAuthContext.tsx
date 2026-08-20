@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { ADMIN_SESSION_KEY, type AdminRole, supabase } from '../lib/supabase';
+import { ADMIN_SESSION_KEY, ADMIN_WRITE_KEY, type AdminRole, setAdminWriteKey, supabase } from '../lib/supabase';
 
 export interface AdminUser {
   email: string;
@@ -39,6 +39,8 @@ function readSession(): AdminUser | null {
 function writeSession(user: AdminUser | null) {
   if (!user) {
     sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    sessionStorage.removeItem(ADMIN_WRITE_KEY);
+    setAdminWriteKey(null);
     return;
   }
   sessionStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(user));
@@ -70,6 +72,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           role: (data.user.app_metadata?.role as AdminRole) || 'ADMIN',
         };
         writeSession(adminUser);
+        setAdminWriteKey(password);
         setUser(adminUser);
         return { ok: true };
       }
@@ -90,6 +93,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         role: 'SUPER_ADMIN',
       };
       writeSession(adminUser);
+      setAdminWriteKey(password);
       setUser(adminUser);
       return { ok: true };
     }
@@ -106,6 +110,7 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
     }
     writeSession(null);
+    setAdminWriteKey(null);
     setUser(null);
   }, []);
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AdminPageHeader } from '../AdminLayout';
 import { useAdminAuth } from '../AdminAuthContext';
-import { getOrder, listOrderItems, updateOrder, type DbOrder } from '../services/adminService';
+import { deleteOrder, getOrder, listOrderItems, updateOrder, type DbOrder } from '../services/adminService';
 import { sendNotification } from '../../lib/notifyClient';
 
 const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'completed', 'cancelled', 'refunded'];
@@ -44,11 +44,13 @@ function parseAddress(raw: unknown): AddressForm {
 
 export const AdminOrderDetailPage: React.FC = () => {
   const { id = '' } = useParams();
+  const navigate = useNavigate();
   const { canWriteSales } = useAdminAuth();
   const [order, setOrder] = useState<DbOrder | null>(null);
   const [address, setAddress] = useState<AddressForm>(parseAddress(null));
   const [items, setItems] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const baselineRef = useRef<{ status: string | null; payment: string | null }>({ status: null, payment: null });
@@ -157,6 +159,24 @@ export const AdminOrderDetailPage: React.FC = () => {
     }
   };
 
+  const onDelete = async () => {
+    if (!order || !canWriteSales) return;
+    const label = order.order_number || order.id.slice(0, 8);
+    const confirmed = window.confirm(`Delete order ${label}? This cannot be undone.`);
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setMessage('');
+    setError('');
+    try {
+      await deleteOrder(order.id);
+      navigate('/admin/orders', { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Delete failed');
+      setDeleting(false);
+    }
+  };
+
   if (!order && !error) return <div className="text-sm text-slate-500 py-10">Loading order…</div>;
   if (!order) {
     return <div className="text-sm text-red-600">{error}</div>;
@@ -170,9 +190,21 @@ export const AdminOrderDetailPage: React.FC = () => {
         title={order.order_number || order.id.slice(0, 8)}
         subtitle="Edit fulfillment, payment, totals, and shipping address"
         actions={
-          <Link to="/admin/orders" className="text-xs font-bold text-slate-500 hover:text-[var(--brand-primary)]">
-            ← Orders
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/admin/orders" className="text-xs font-bold text-slate-500 hover:text-[var(--brand-primary)]">
+              ← Orders
+            </Link>
+            {canWriteSales && (
+              <button
+                type="button"
+                disabled={deleting || saving}
+                onClick={() => void onDelete()}
+                className="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100 disabled:opacity-60"
+              >
+                {deleting ? 'Deleting…' : 'Delete order'}
+              </button>
+            )}
+          </div>
         }
       />
 
@@ -377,13 +409,23 @@ export const AdminOrderDetailPage: React.FC = () => {
         </section>
 
         {canWriteSales && (
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white px-5 py-2.5 text-xs font-bold disabled:opacity-60"
-          >
-            {saving ? 'Saving…' : 'Save order changes'}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="submit"
+              disabled={saving || deleting}
+              className="rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white px-5 py-2.5 text-xs font-bold disabled:opacity-60"
+            >
+              {saving ? 'Saving…' : 'Save order changes'}
+            </button>
+            <button
+              type="button"
+              disabled={saving || deleting}
+              onClick={() => void onDelete()}
+              className="rounded-xl border border-red-200 bg-white text-red-700 px-5 py-2.5 text-xs font-bold hover:bg-red-50 disabled:opacity-60"
+            >
+              {deleting ? 'Deleting…' : 'Delete order'}
+            </button>
+          </div>
         )}
       </form>
 

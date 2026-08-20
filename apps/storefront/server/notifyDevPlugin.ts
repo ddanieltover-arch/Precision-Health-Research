@@ -2,6 +2,7 @@ import type { Plugin } from 'vite';
 import { loadEnv } from 'vite';
 import { handleNotifyRequest } from './email/send.js';
 import { handleCreateOrderRequest } from './orders/createOrder.js';
+import { handleAdminOrderRequest } from './admin/ordersAdmin.js';
 
 /**
  * Local /api/* endpoints so Resend + order persistence work during `vite` without Vercel CLI.
@@ -19,7 +20,8 @@ export function notifyDevPlugin(): Plugin {
 
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split('?')[0];
-        if (url !== '/api/notify' && url !== '/api/create-order') {
+        const allowed = new Set(['/api/notify', '/api/create-order', '/api/admin-orders']);
+        if (!url || !allowed.has(url)) {
           next();
           return;
         }
@@ -28,7 +30,7 @@ export function notifyDevPlugin(): Plugin {
           res.statusCode = 204;
           res.setHeader('Access-Control-Allow-Origin', '*');
           res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-          res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-phr-admin-key');
           res.end();
           return;
         }
@@ -47,10 +49,20 @@ export function notifyDevPlugin(): Plugin {
           }
           const raw = Buffer.concat(chunks).toString('utf8');
           const body = raw ? JSON.parse(raw) : {};
-          const { status, result } =
-            url === '/api/create-order'
-              ? await handleCreateOrderRequest(body)
-              : await handleNotifyRequest(body);
+
+          let status = 500;
+          let result: unknown = { ok: false, error: 'Unhandled' };
+
+          if (url === '/api/admin-orders') {
+            const adminKeyHeader = req.headers['x-phr-admin-key'];
+            const adminKey = Array.isArray(adminKeyHeader) ? adminKeyHeader[0] : adminKeyHeader;
+            ({ status, result } = await handleAdminOrderRequest(body, adminKey));
+          } else if (url === '/api/create-order') {
+            ({ status, result } = await handleCreateOrderRequest(body));
+          } else {
+            ({ status, result } = await handleNotifyRequest(body));
+          }
+
           res.statusCode = status;
           res.setHeader('Content-Type', 'application/json');
           res.setHeader('Access-Control-Allow-Origin', '*');

@@ -1,4 +1,4 @@
-import { supabase } from '../../lib/supabase';
+import { getAdminWriteKey, supabase } from '../../lib/supabase';
 
 export interface DbCategory {
   id: string;
@@ -210,15 +210,59 @@ export async function listOrderItems(orderId: string) {
 }
 
 export async function updateOrder(id: string, patch: Partial<DbOrder>) {
-  const client = requireClient();
-  const { data, error } = await client
-    .from('orders')
-    .update({ ...patch, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .select('*')
-    .maybeSingle();
-  if (error) throw error;
-  return data as DbOrder;
+  const adminKey = getAdminWriteKey();
+  if (!adminKey) {
+    throw new Error('Admin write session expired. Sign out and sign in again.');
+  }
+
+  const response = await fetch('/api/admin-orders', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-phr-admin-key': adminKey,
+    },
+    body: JSON.stringify({ action: 'update', id, patch }),
+  });
+
+  let data: { ok?: boolean; order?: DbOrder; error?: string } | null = null;
+  try {
+    data = (await response.json()) as { ok?: boolean; order?: DbOrder; error?: string };
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok || !data?.ok || !data.order) {
+    throw new Error(data?.error || `Order update failed (${response.status})`);
+  }
+
+  return data.order;
+}
+
+export async function deleteOrder(id: string) {
+  const adminKey = getAdminWriteKey();
+  if (!adminKey) {
+    throw new Error('Admin write session expired. Sign out and sign in again.');
+  }
+
+  const response = await fetch('/api/admin-orders', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-phr-admin-key': adminKey,
+    },
+    body: JSON.stringify({ action: 'delete', id }),
+  });
+
+  let data: { ok?: boolean; error?: string } | null = null;
+  try {
+    data = (await response.json()) as { ok?: boolean; error?: string };
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok || !data?.ok) {
+    throw new Error(data?.error || `Order delete failed (${response.status})`);
+  }
 }
 
 export async function listCustomers() {
