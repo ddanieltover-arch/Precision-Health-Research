@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite';
 import { loadEnv } from 'vite';
-import { handleNotifyRequest } from '../server/email/send';
+import { handleNotifyRequest } from './email/send.js';
 
 /**
  * Local /api/notify endpoint so Resend works during `vite` without Vercel CLI.

@@ -1,4 +1,4 @@
-import type { NotifyPayload, OrderLineItem } from './types';
+import type { NotifyPayload, OrderLineItem } from './types.js';
 
 const BRAND = {
   name: 'Precision Health Research',

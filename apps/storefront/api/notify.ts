@@ -1,5 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { handleNotifyRequest } from '../server/email/send';
+
+export const config = {
+  maxDuration: 30,
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,6 +17,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ ok: false, error: 'Method not allowed' });
   }
 
-  const { status, result } = await handleNotifyRequest(req.body);
-  return res.status(status).json(result);
+  try {
+    // Dynamic import so load failures return JSON instead of a blank 500
+    const { handleNotifyRequest } = await import('../server/email/send.js');
+    const { status, result } = await handleNotifyRequest(req.body);
+    return res.status(status).json(result);
+  } catch (err) {
+    console.error('[api/notify]', err);
+    return res.status(500).json({
+      ok: false,
+      error: err instanceof Error ? err.message : 'Notify handler crashed',
+    });
+  }
 }

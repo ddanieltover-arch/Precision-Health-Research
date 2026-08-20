@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import type { EmailMessage, NotifyPayload, NotifyResult } from './types';
+import type { EmailMessage, NotifyPayload, NotifyResult } from './types.js';
 import {
   BRAND,
   buildContactAdminEmail,
@@ -12,7 +12,7 @@ import {
   buildOrderUserEmail,
   buildQuickInquiryAdminEmail,
   buildQuickInquiryUserEmail,
-} from './templates';
+} from './templates.js';
 
 function env(name: string, fallback = ''): string {
   return (process.env[name] || fallback).trim();
@@ -42,7 +42,7 @@ function makeTicketId(prefix: string): string {
 }
 
 async function sendOne(client: Resend, message: EmailMessage): Promise<void> {
-  const { error } = await client.emails.send({
+  const { data, error } = await client.emails.send({
     from: getFromAddress(),
     to: [message.to],
     subject: message.subject,
@@ -50,7 +50,14 @@ async function sendOne(client: Resend, message: EmailMessage): Promise<void> {
     replyTo: message.replyTo,
   });
   if (error) {
-    throw new Error(typeof error === 'object' && error && 'message' in error ? String((error as { message: string }).message) : 'Resend send failed');
+    const msg =
+      typeof error === 'object' && error && 'message' in error
+        ? String((error as { message: string }).message)
+        : 'Resend send failed';
+    throw new Error(msg);
+  }
+  if (!data?.id) {
+    throw new Error('Resend returned no message id');
   }
 }
 
