@@ -1,20 +1,31 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { PRODUCTS } from '../../data/catalog';
 import { useStore } from '../../context/StoreContext';
 import { ProductImage } from '../common/ProductImage';
+import { getProductImageCandidates } from '../../lib/productImages';
 import { 
   ArrowRight, 
-  FlaskConical, 
   Calculator, 
-  FileCheck2, 
-  ShieldCheck, 
   Sparkles,
-  Award,
-  Zap,
-  CheckCircle2
 } from 'lucide-react';
 
+/** Featured hero compound — real catalog SKU (matches vial artwork). */
+const HERO_PRODUCT_ID = 'tb-500';
+
 export const HeroBanner: React.FC = () => {
-  const { setActiveView, setSelectedCategory } = useStore();
+  const { setActiveView, setSelectedCategory, openProductDetail, formatPrice } = useStore();
+
+  const featuredProduct = useMemo(
+    () => PRODUCTS.find((p) => p.id === HERO_PRODUCT_ID) ?? PRODUCTS.find((p) => p.isFeatured) ?? PRODUCTS[0],
+    []
+  );
+
+  const heroImageSrc = getProductImageCandidates(
+    featuredProduct.thumbnailUrl,
+    featuredProduct.id
+  )[0];
+
+  const purityLabel = featuredProduct.purity.replace(/^≥\s*/, '');
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-[#0f1d2f] via-[#1b3552] to-[#0a1522] text-white border-b border-slate-800">
@@ -99,10 +110,9 @@ export const HeroBanner: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Hero Visual Card with highlighted compound */}
+          {/* Right Column: Featured catalog product */}
           <div className="lg:col-span-5">
             <div className="relative rounded-2xl bg-gradient-to-b from-slate-800/90 to-slate-900/90 p-6 border border-slate-700/80 shadow-2xl backdrop-blur-md">
-              {/* Card top banner */}
               <div className="flex items-center justify-between pb-4 border-b border-slate-700/60">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
@@ -111,52 +121,56 @@ export const HeroBanner: React.FC = () => {
                   </span>
                 </div>
                 <span className="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[11px] font-bold">
-                  HPLC: 99.64%
+                  HPLC: {purityLabel}
                 </span>
               </div>
 
-              {/* Product Hero Image & Spec */}
-              <div className="py-6 flex flex-col items-center text-center">
-                <div className="relative w-48 h-48 sm:w-56 sm:h-56 mb-4 flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => openProductDetail(featuredProduct)}
+                className="w-full py-6 flex flex-col items-center text-center group"
+              >
+                <div className="relative w-48 h-48 sm:w-56 sm:h-56 mb-4 flex items-center justify-center rounded-2xl bg-white/95 p-3">
                   <ProductImage
-                    src="/heroes/phr-tb-500-hero-1779562911590.png"
-                    productId="bpc-tb-blend"
-                    alt="BPC-157 & TB-500 Blend"
-                    purity="99.64%"
+                    src={heroImageSrc}
+                    productId={featuredProduct.id}
+                    alt={featuredProduct.name}
+                    purity={featuredProduct.purity}
                     priority={true}
-                    className="w-full h-full object-contain filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.6)] hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-contain filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.35)] group-hover:scale-105 transition-transform duration-300"
                     containerClassName="w-full h-full"
                   />
                 </div>
 
-                <h3 className="text-lg font-extrabold text-white font-display">
-                  BPC-157 &amp; TB-500 Synergistic Matrix
+                <h3 className="text-lg font-extrabold text-white font-display group-hover:text-sky-200 transition-colors">
+                  {featuredProduct.name}
                 </h3>
                 <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                  Equimolar dual peptide blend for tissue remodeling &amp; angiogenic laboratory assays.
+                  {featuredProduct.shortDesc}
                 </p>
                 
                 <div className="mt-4 flex items-center gap-2">
-                  <span className="text-xs text-slate-400">Lot: PHR-2026-08</span>
+                  <span className="text-xs text-slate-400">
+                    Lot: {featuredProduct.variants[0]?.sku ?? 'PHR-2026'}
+                  </span>
                   <span className="text-slate-600">&bull;</span>
-                  <span className="text-xs text-emerald-400 font-medium">In Stock (UK Hub)</span>
+                  <span className="text-xs text-emerald-400 font-medium">
+                    {featuredProduct.stock > 0 ? 'In Stock (UK Hub)' : 'Backordered'}
+                  </span>
                 </div>
-              </div>
+              </button>
 
-              {/* Quick Card Action */}
               <div className="pt-4 border-t border-slate-700/60 flex items-center justify-between">
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Starting at</span>
-                  <span className="text-lg font-bold text-white">£64.99</span>
+                  <span className="text-lg font-bold text-white">{formatPrice(featuredProduct.basePrice)}</span>
                 </div>
                 <button
-                  onClick={() => {
-                    setSelectedCategory('injectables');
-                    setActiveView('catalog');
-                  }}
+                  type="button"
+                  onClick={() => openProductDetail(featuredProduct)}
                   className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5"
                 >
-                  <span>Explore Blend</span>
+                  <span>View Product</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
