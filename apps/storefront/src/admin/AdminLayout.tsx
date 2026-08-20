@@ -23,18 +23,35 @@ function useAdminNoIndex() {
 }
 
 const AdminChrome: React.FC = () => (
-  <div className="min-h-screen bg-slate-50">
-    <header className="border-b border-[var(--brand-border)] bg-white">
-      <div className="mx-auto max-w-7xl px-4 py-4 md:px-6 flex items-center justify-between gap-4">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-primary)]">Admin</p>
-          <Link to="/admin" className="text-lg font-extrabold text-slate-900 font-display">
-            Precision Health CMS
+  <div className="min-h-screen bg-[#f4f7fb]">
+    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
+      <div className="mx-auto max-w-7xl px-4 md:px-6">
+        <div className="flex items-center justify-between gap-4 py-3.5">
+          <div className="flex items-center gap-3 min-w-0">
+            <Link
+              to="/admin"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-primary-dark)] text-white text-xs font-extrabold tracking-tight shadow-sm"
+              aria-label="Admin home"
+            >
+              PH
+            </Link>
+            <div className="min-w-0">
+              <Link to="/admin" className="block text-[15px] font-extrabold text-slate-900 font-display leading-tight truncate">
+                Precision Health
+              </Link>
+              <p className="text-[11px] font-medium text-slate-500 leading-tight">Operations console</p>
+            </div>
+          </div>
+          <Link
+            to="/"
+            className="shrink-0 text-xs font-semibold text-slate-500 hover:text-[var(--brand-primary)] transition-colors"
+          >
+            View storefront
           </Link>
         </div>
-        <Link to="/" className="text-xs font-bold text-slate-500 hover:text-[var(--brand-primary)]">
-          ← Storefront
-        </Link>
+        <div className="border-t border-slate-100 pb-0.5 pt-0.5">
+          <AdminNav />
+        </div>
       </div>
     </header>
 
@@ -44,7 +61,6 @@ const AdminChrome: React.FC = () => (
           Supabase env vars missing. Set <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code>.
         </div>
       )}
-      <AdminNav />
       <Outlet />
     </div>
   </div>
@@ -58,7 +74,7 @@ const AdminGate: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-sm text-slate-500">
+      <div className="min-h-screen flex items-center justify-center bg-[#f4f7fb] text-sm text-slate-500">
         Loading admin…
       </div>
     );
@@ -90,11 +106,10 @@ export const AdminPageHeader: React.FC<{ title: string; subtitle?: string; actio
   subtitle,
   actions,
 }) => (
-  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 pb-4 border-b border-[var(--brand-border)]">
+  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
     <div>
-      <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-primary)] mb-1">Admin</p>
-      <h1 className="text-2xl font-extrabold text-slate-900 font-display">{title}</h1>
-      {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
+      <h1 className="text-2xl font-extrabold text-slate-900 font-display tracking-tight">{title}</h1>
+      {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
     </div>
     {actions}
   </div>

@@ -38,7 +38,6 @@ import { AdminOrderDetailPage } from './admin/pages/AdminOrderDetailPage';
 import { AdminCustomersPage } from './admin/pages/AdminCustomersPage';
 import { AdminCustomerDetailPage } from './admin/pages/AdminCustomerDetailPage';
 import { AdminCategoriesPage } from './admin/pages/AdminCategoriesPage';
-import { AdminCoasPage } from './admin/pages/AdminCoasPage';
 import { AdminInquiriesPage } from './admin/pages/AdminInquiriesPage';
 
 const HomePage = () => (
@@ -111,7 +110,7 @@ const AppShell: React.FC = () => {
           <Route path="customers" element={<AdminCustomersPage />} />
           <Route path="customers/:id" element={<AdminCustomerDetailPage />} />
           <Route path="categories" element={<AdminCategoriesPage />} />
-          <Route path="coas" element={<AdminCoasPage />} />
+          <Route path="coas" element={<Navigate to="/admin" replace />} />
           <Route path="inquiries" element={<AdminInquiriesPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Route>
