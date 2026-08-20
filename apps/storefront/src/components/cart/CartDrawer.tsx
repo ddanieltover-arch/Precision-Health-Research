@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { ProductImage } from '../common/ProductImage';
+import {
+  FREE_SHIPPING_THRESHOLD_GBP,
+  getUkShippingCost,
+} from '../../lib/ukShipping';
 import { 
   X, 
   ShoppingBag, 
@@ -34,7 +38,8 @@ export const CartDrawer: React.FC = () => {
 
   if (!isCartOpen) return null;
 
-  const FREE_SHIPPING_THRESHOLD = 100;
+  const FREE_SHIPPING_THRESHOLD = FREE_SHIPPING_THRESHOLD_GBP;
+  const estimatedShipping = getUkShippingCost('royal_mail_24', cartTotal);
   const progressToFreeShipping = Math.min(100, (cartTotal / FREE_SHIPPING_THRESHOLD) * 100);
   const amountNeeded = Math.max(0, FREE_SHIPPING_THRESHOLD - cartTotal);
 
@@ -104,7 +109,9 @@ export const CartDrawer: React.FC = () => {
             <div className="flex items-center justify-between text-xs font-semibold text-[#335e90] mb-1.5">
               <span className="flex items-center gap-1">
                 <Truck className="w-3.5 h-3.5" />
-                {amountNeeded === 0 ? 'Free US Priority Shipping Unlocked!' : `Add ${formatPrice(amountNeeded)} for Free US Priority Shipping`}
+                {amountNeeded === 0
+                  ? 'Free UK Tracked 24 Shipping Unlocked!'
+                  : `Add ${formatPrice(amountNeeded)} for Free UK Tracked 24 Shipping`}
               </span>
               <span className="text-[11px]">{progressToFreeShipping.toFixed(0)}%</span>
             </div>
@@ -259,7 +266,9 @@ export const CartDrawer: React.FC = () => {
                 <div className="flex justify-between">
                   <span>Estimated Shipping</span>
                   <span className="font-semibold text-slate-700">
-                    {cartTotal >= FREE_SHIPPING_THRESHOLD ? 'FREE (Royal Mail Tracked 24)' : formatPrice(4.99)}
+                    {estimatedShipping === 0
+                      ? 'FREE (Royal Mail 24)'
+                      : formatPrice(estimatedShipping)}
                   </span>
                 </div>
                 <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-200/80 flex items-center justify-between text-[11px] text-emerald-800">
@@ -269,7 +278,7 @@ export const CartDrawer: React.FC = () => {
                 <div className="flex justify-between text-sm font-black text-slate-900 pt-2 border-t border-slate-100">
                   <span>Estimated Order Total</span>
                   <span className="text-[#335e90] font-display">
-                    {formatPrice(finalTotal + (cartTotal >= FREE_SHIPPING_THRESHOLD ? 0 : 4.99))}
+                    {formatPrice(finalTotal + estimatedShipping)}
                   </span>
                 </div>
               </div>

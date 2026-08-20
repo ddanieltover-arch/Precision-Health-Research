@@ -9,7 +9,6 @@ import { CategoryBar } from './components/storefront/CategoryBar';
 import { ProductGrid } from './components/storefront/ProductGrid';
 import { ProductDetailView } from './components/storefront/ProductDetailView';
 import { PeptideCalculator } from './components/calculator/PeptideCalculator';
-import { CoaLookupHub } from './components/coa/CoaLookupHub';
 import { ResearchMonographs } from './components/research/ResearchMonographs';
 import { PeptideGuideView } from './components/guide/PeptideGuideView';
 import { PeptideResearchLibrarySection } from './components/home/PeptideResearchLibrarySection';
@@ -46,7 +45,6 @@ const HomePage = () => (
   <>
     <HeroBanner />
     <TrustBadges />
-    <CategoryBar />
     <PeptideResearchLibrarySection />
     <HomeCuratedSections />
     <SourcingSimplifiedSection />
@@ -128,7 +126,7 @@ const AppShell: React.FC = () => {
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/product/:slug" element={<ProductDetailView />} />
         <Route path="/calculator" element={<PeptideCalculator />} />
-        <Route path="/coa" element={<CoaLookupHub />} />
+        <Route path="/coa" element={<Navigate to="/" replace />} />
         <Route path="/research" element={<ResearchMonographs />} />
         <Route path="/guide" element={<PeptideGuideView />} />
         <Route path="/peptide-guide" element={<Navigate to="/guide" replace />} />

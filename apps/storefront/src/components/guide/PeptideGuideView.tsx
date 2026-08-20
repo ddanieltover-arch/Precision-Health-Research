@@ -299,11 +299,11 @@ export const PeptideGuideView: React.FC = () => {
                 <span>Reconstitution Calculator</span>
               </button>
               <button
-                onClick={() => setActiveView('coa')}
+                onClick={() => setActiveView('quality')}
                 className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all border border-slate-600 shadow-xs"
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Batch COA Hub</span>
+                <span>Quality Standards</span>
               </button>
             </div>
           </div>
@@ -433,10 +433,10 @@ export const PeptideGuideView: React.FC = () => {
               </div>
 
               <button
-                onClick={() => setActiveView('coa')}
+                onClick={() => setActiveView('quality')}
                 className="w-full py-2 px-3 bg-[#335e90] hover:bg-[#264a73] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
               >
-                <span>View Real Batch HPLC Data</span>
+                <span>View Quality Standards</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -1043,10 +1043,10 @@ export const PeptideGuideView: React.FC = () => {
               </p>
             </div>
             <button
-              onClick={() => setActiveView('coa')}
+              onClick={() => setActiveView('quality')}
               className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-xl transition-colors shrink-0 flex items-center gap-1.5"
             >
-              <span>Explore Certificate Archive</span>
+              <span>Explore Quality Standards</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>

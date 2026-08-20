@@ -105,7 +105,7 @@ export const FaqView: React.FC = () => {
     },
     {
       q: 'What are your domestic UK shipping timeframes?',
-      a: 'Orders placed before 2:00 PM GMT Monday through Friday are packed and dispatched same-day from our UK distribution hub. Royal Mail Tracked 24 delivers in 1-2 business days, and Royal Mail Special Delivery guarantees delivery by 1:00 PM next day.'
+      a: 'Orders placed before 2:00 PM GMT Monday through Friday are packed and dispatched same-day from our UK distribution hub. UK options include Royal Mail 24 (£4.50, free over £500), Royal Mail Special (£7.50), DPD UK (£6.90), and DPD Saturday Delivery (£9.50).'
     },
     {
       q: 'What payment methods do you accept?',
@@ -181,20 +181,40 @@ export const ShippingView: React.FC = () => {
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
             <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
               <Truck className="w-4 h-4 text-[#335e90]" />
-              <span>Royal Mail Tracked 24 (1-2 Business Days)</span>
+              <span>Royal Mail 24 — £4.50</span>
             </div>
             <p>
-              Flat-rate £4.99 or <strong>FREE on all UK orders over £100</strong>. Dispatched in insulated thermal bubble mailers with full barcode tracking updates.
+              1–2 working days. <strong>FREE on UK orders over £500</strong>. Dispatched in insulated thermal bubble mailers with full barcode tracking.
             </p>
           </div>
 
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
             <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
               <ThermometerSnowflake className="w-4 h-4 text-sky-600" />
-              <span>Royal Mail Special Delivery Guaranteed by 1pm (£8.99)</span>
+              <span>Royal Mail Special — £7.50</span>
             </div>
             <p>
-              Guaranteed next-business-day delivery before 1:00 PM with frozen refrigerant cold gel packs for temperature-sensitive research compounds.
+              1 working day. Faster Royal Mail service for time-sensitive research consignments.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+              <Truck className="w-4 h-4 text-indigo-600" />
+              <span>DPD UK — £6.90</span>
+            </div>
+            <p>
+              1–2 working days via DPD UK with doorstep delivery and live tracking updates.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+            <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+              <Truck className="w-4 h-4 text-violet-600" />
+              <span>DPD UK (Saturday Delivery) — £9.50</span>
+            </div>
+            <p>
+              Weekend delivery via DPD UK for Saturday drop-off when you need research materials outside the weekday schedule.
             </p>
           </div>
         </div>

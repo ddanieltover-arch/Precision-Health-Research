@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { sendNotification } from '../../lib/notifyClient';
+import {
+  FREE_SHIPPING_THRESHOLD_GBP,
+  UK_SHIPPING_OPTIONS,
+  getUkShippingCost,
+  getUkShippingOption,
+  type UkShippingMethodId,
+} from '../../lib/ukShipping';
 import { 
   X, 
   ShieldCheck, 
@@ -30,7 +37,7 @@ export const CheckoutModal: React.FC = () => {
   } = useStore();
 
   const [step, setStep] = useState<'details' | 'payment' | 'confirmation'>('details');
-  const [shippingSpeed, setShippingSpeed] = useState<'tracked24' | 'specialDelivery'>('tracked24');
+  const [shippingMethod, setShippingMethod] = useState<UkShippingMethodId>('royal_mail_24');
   const [paymentMethod, setPaymentMethod] = useState<'bank_transfer' | 'crypto'>('bank_transfer');
   const [researchCertified, setResearchCertified] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,7 +49,6 @@ export const CheckoutModal: React.FC = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    institution: '',
     email: '',
     phone: '',
     address: '',
@@ -53,8 +59,9 @@ export const CheckoutModal: React.FC = () => {
 
   if (!isCheckoutOpen) return null;
 
-  const FREE_SHIPPING_THRESHOLD_GBP = 100;
-  const shippingCost = shippingSpeed === 'specialDelivery' ? 9.99 : (cartTotal >= FREE_SHIPPING_THRESHOLD_GBP ? 0 : 4.99);
+  const FREE_SHIPPING_THRESHOLD = FREE_SHIPPING_THRESHOLD_GBP;
+  const shippingCost = getUkShippingCost(shippingMethod, cartTotal);
+  const selectedShipping = getUkShippingOption(shippingMethod);
   const cryptoDiscount = paymentMethod === 'crypto' ? cartTotal * 0.05 : 0;
   const grandTotal = Math.max(0, cartTotal - cryptoDiscount + shippingCost);
 
@@ -94,7 +101,6 @@ export const CheckoutModal: React.FC = () => {
     const fullName = `${formData.firstName} ${formData.lastName}`.trim();
     const shippingAddress = [
       fullName,
-      formData.institution,
       formData.address,
       formData.city,
       formData.county,
@@ -119,9 +125,8 @@ export const CheckoutModal: React.FC = () => {
         email: formData.email.trim(),
         name: fullName,
         phone: formData.phone.trim() || undefined,
-        institution: formData.institution.trim() || undefined,
         paymentMethod,
-        shippingMethod: shippingSpeed === 'specialDelivery' ? 'Special Delivery' : 'Tracked 24',
+        shippingMethod: selectedShipping.label,
         shippingAddress,
         items,
         subtotal: cartTotal,
@@ -155,11 +160,12 @@ export const CheckoutModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm overflow-y-auto overscroll-contain">
+      <div className="min-h-full flex items-start sm:items-center justify-center p-3 sm:p-4">
+        <div className="bg-white rounded-3xl max-w-2xl w-full my-3 sm:my-6 border border-slate-200 shadow-2xl flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-3rem)] overflow-hidden">
         
         {/* Header */}
-        <div className="p-5 bg-gradient-to-r from-[#0f1d2f] to-[#1b3552] text-white flex items-center justify-between">
+        <div className="shrink-0 p-5 bg-gradient-to-r from-[#0f1d2f] to-[#1b3552] text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 flex items-center justify-center border border-sky-400/30">
               <Lock className="w-4 h-4" />
@@ -184,7 +190,7 @@ export const CheckoutModal: React.FC = () => {
 
         {/* Step Indicator */}
         {step !== 'confirmation' && (
-          <div className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center justify-between text-xs font-bold text-slate-500">
+          <div className="shrink-0 bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center justify-between text-xs font-bold text-slate-500">
             <span className={step === 'details' ? 'text-[#335e90] font-extrabold' : 'text-slate-400'}>
               1. UK Delivery Details
             </span>
@@ -195,6 +201,7 @@ export const CheckoutModal: React.FC = () => {
           </div>
         )}
 
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
         {/* STEP 1: Shipping Details */}
         {step === 'details' && (
           <form onSubmit={handleDetailsSubmit} className="p-6 sm:p-8 space-y-6">
@@ -236,30 +243,17 @@ export const CheckoutModal: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-semibold text-slate-600 block mb-1">Institution / Research Facility</label>
-                  <input
-                    type="text"
-                    name="institution"
-                    value={formData.institution}
-                    onChange={handleInputChange}
-                    placeholder="E.g. Department of Biochemistry"
-                    className="w-full text-xs p-2.5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-[#335e90]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-semibold text-slate-600 block mb-1">Email Address *</label>
-                  <input
-                    type="email"
-                    required
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="researcher@lab.ac.uk"
-                    className="w-full text-xs p-2.5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-[#335e90]"
-                  />
-                </div>
+              <div>
+                <label className="text-[11px] font-semibold text-slate-600 block mb-1">Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  placeholder="researcher@lab.ac.uk"
+                  className="w-full text-xs p-2.5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-[#335e90]"
+                />
               </div>
 
               <div>
@@ -317,41 +311,50 @@ export const CheckoutModal: React.FC = () => {
             {/* UK Shipping Method Option */}
             <div className="space-y-2 pt-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                2. Select UK Royal Mail Dispatch
+                2. Select UK Shipping
               </h4>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShippingSpeed('tracked24')}
-                  className={`p-3 rounded-xl text-left border transition-all ${
-                    shippingSpeed === 'tracked24'
-                      ? 'border-[#335e90] bg-sky-50/60 ring-2 ring-[#335e90]/20'
-                      : 'border-slate-200 bg-white'
-                  }`}
-                >
-                  <div className="text-xs font-bold text-slate-900">Royal Mail Tracked 24</div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">1-2 business days with cold thermal sleeve</div>
-                  <div className="text-xs font-extrabold text-[#335e90] mt-1">
-                    {cartTotal >= FREE_SHIPPING_THRESHOLD_GBP ? 'FREE' : formatPrice(4.99)}
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setShippingSpeed('specialDelivery')}
-                  className={`p-3 rounded-xl text-left border transition-all ${
-                    shippingSpeed === 'specialDelivery'
-                      ? 'border-[#335e90] bg-sky-50/60 ring-2 ring-[#335e90]/20'
-                      : 'border-slate-200 bg-white'
-                  }`}
-                >
-                  <div className="text-xs font-bold text-slate-900">Special Delivery by 1pm</div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">Guaranteed next morning + ice packs</div>
-                  <div className="text-xs font-extrabold text-[#335e90] mt-1">
-                    {formatPrice(9.99)}
-                  </div>
-                </button>
+              <div className="space-y-2">
+                {UK_SHIPPING_OPTIONS.map((option) => {
+                  const isSelected = shippingMethod === option.id;
+                  const isFree =
+                    option.qualifiesForFreeShipping && cartTotal >= FREE_SHIPPING_THRESHOLD;
+                  const displayPrice = isFree ? 0 : option.price;
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setShippingMethod(option.id)}
+                      className={`w-full p-3.5 rounded-xl text-left border transition-all flex items-center gap-3 ${
+                        isSelected
+                          ? 'border-[#335e90] bg-sky-50/60 ring-2 ring-[#335e90]/20'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          isSelected ? 'border-[#335e90]' : 'border-slate-300'
+                        }`}
+                      >
+                        {isSelected && <span className="w-2 h-2 rounded-full bg-[#335e90]" />}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-bold text-slate-900">{option.label}</div>
+                        <div className="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wide">
+                          {option.eta}
+                        </div>
+                      </div>
+                      <div className="text-xs font-extrabold text-slate-900 shrink-0">
+                        {isFree ? 'FREE' : formatPrice(displayPrice)}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
+              {cartTotal < FREE_SHIPPING_THRESHOLD && (
+                <p className="text-[10px] text-slate-500 pt-1">
+                  Free Royal Mail 24 on UK orders over {formatPrice(FREE_SHIPPING_THRESHOLD)}.
+                </p>
+              )}
             </div>
 
             {/* Order Total Preview & Continue */}
@@ -546,7 +549,7 @@ export const CheckoutModal: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-slate-500">Dispatch Carrier</span>
                 <span className="font-semibold text-slate-800">
-                  {shippingSpeed === 'tracked24' ? 'Royal Mail Tracked 24' : 'Special Delivery by 1pm'}
+                  {selectedShipping.label}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -684,6 +687,8 @@ export const CheckoutModal: React.FC = () => {
           </div>
         )}
 
+        </div>
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { PRODUCTS } from '../../data/catalog';
 import { useStore } from '../../context/StoreContext';
 import { ProductImage } from '../common/ProductImage';
@@ -9,16 +9,52 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-/** Featured hero compound — real catalog SKU (matches vial artwork). */
-const HERO_PRODUCT_ID = 'tb-500';
+const SLIDE_MS = 10_000;
+const FADE_MS = 700;
 
 export const HeroBanner: React.FC = () => {
   const { setActiveView, setSelectedCategory, openProductDetail, formatPrice } = useStore();
 
-  const featuredProduct = useMemo(
-    () => PRODUCTS.find((p) => p.id === HERO_PRODUCT_ID) ?? PRODUCTS.find((p) => p.isFeatured) ?? PRODUCTS[0],
+  const slides = useMemo(
+    () => PRODUCTS.filter((p) => p.isActive !== false),
     []
   );
+
+  const [index, setIndex] = useState(0);
+  const [opaque, setOpaque] = useState(true);
+  const [paused, setPaused] = useState(false);
+
+  const featuredProduct = slides[index] ?? slides[0];
+
+  useEffect(() => {
+    if (slides.length < 2 || paused) return;
+
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let fadeTimeout: number | undefined;
+
+    const tick = () => {
+      if (reduceMotion) {
+        setIndex((i) => (i + 1) % slides.length);
+        return;
+      }
+      setOpaque(false);
+      fadeTimeout = window.setTimeout(() => {
+        setIndex((i) => (i + 1) % slides.length);
+        setOpaque(true);
+      }, FADE_MS);
+    };
+
+    const id = window.setInterval(tick, SLIDE_MS);
+    return () => {
+      window.clearInterval(id);
+      if (fadeTimeout !== undefined) window.clearTimeout(fadeTimeout);
+    };
+  }, [slides.length, paused]);
+
+  if (!featuredProduct) return null;
 
   const heroImageSrc = getProductImageCandidates(
     featuredProduct.thumbnailUrl,
@@ -110,9 +146,21 @@ export const HeroBanner: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Featured catalog product */}
+          {/* Right Column: Catalogue product slideshow */}
           <div className="lg:col-span-5">
-            <div className="relative rounded-2xl bg-gradient-to-b from-slate-800/90 to-slate-900/90 p-6 border border-slate-700/80 shadow-2xl backdrop-blur-md">
+            <div
+              className="relative rounded-2xl bg-gradient-to-b from-slate-800/90 to-slate-900/90 p-6 border border-slate-700/80 shadow-2xl backdrop-blur-md"
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+              onFocusCapture={() => setPaused(true)}
+              onBlurCapture={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  setPaused(false);
+                }
+              }}
+              aria-roledescription="carousel"
+              aria-label="Catalogue product showcase"
+            >
               <div className="flex items-center justify-between pb-4 border-b border-slate-700/60">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
@@ -120,59 +168,95 @@ export const HeroBanner: React.FC = () => {
                     Featured Formulation
                   </span>
                 </div>
-                <span className="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[11px] font-bold">
+                <span
+                  key={`purity-${featuredProduct.id}`}
+                  className={`px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[11px] font-bold transition-opacity duration-700 ${
+                    opaque ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
                   HPLC: {purityLabel}
                 </span>
               </div>
 
-              <button
-                type="button"
-                onClick={() => openProductDetail(featuredProduct)}
-                className="w-full py-6 flex flex-col items-center text-center group"
+              <div
+                className={`transition-opacity duration-700 ease-in-out ${
+                  opaque ? 'opacity-100' : 'opacity-0'
+                }`}
               >
-                <div className="relative w-48 h-48 sm:w-56 sm:h-56 mb-4 flex items-center justify-center rounded-2xl bg-white/95 p-3">
-                  <ProductImage
-                    src={heroImageSrc}
-                    productId={featuredProduct.id}
-                    alt={featuredProduct.name}
-                    purity={featuredProduct.purity}
-                    priority={true}
-                    className="w-full h-full object-contain filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.35)] group-hover:scale-105 transition-transform duration-300"
-                    containerClassName="w-full h-full"
-                  />
-                </div>
-
-                <h3 className="text-lg font-extrabold text-white font-display group-hover:text-sky-200 transition-colors">
-                  {featuredProduct.name}
-                </h3>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs">
-                  {featuredProduct.shortDesc}
-                </p>
-                
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="text-xs text-slate-400">
-                    Lot: {featuredProduct.variants[0]?.sku ?? 'PHR-2026'}
-                  </span>
-                  <span className="text-slate-600">&bull;</span>
-                  <span className="text-xs text-emerald-400 font-medium">
-                    {featuredProduct.stock > 0 ? 'In Stock (UK Hub)' : 'Backordered'}
-                  </span>
-                </div>
-              </button>
-
-              <div className="pt-4 border-t border-slate-700/60 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Starting at</span>
-                  <span className="text-lg font-bold text-white">{formatPrice(featuredProduct.basePrice)}</span>
-                </div>
                 <button
                   type="button"
                   onClick={() => openProductDetail(featuredProduct)}
-                  className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5"
+                  className="w-full py-6 flex flex-col items-center text-center group"
                 >
-                  <span>View Product</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <div className="relative w-48 h-48 sm:w-56 sm:h-56 mb-4 flex items-center justify-center rounded-2xl bg-white/95 p-3">
+                    <ProductImage
+                      key={featuredProduct.id}
+                      src={heroImageSrc}
+                      productId={featuredProduct.id}
+                      alt={featuredProduct.name}
+                      purity={featuredProduct.purity}
+                      priority={index === 0}
+                      className="w-full h-full object-contain filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.35)] group-hover:scale-105 transition-transform duration-300"
+                      containerClassName="w-full h-full"
+                    />
+                  </div>
+
+                  <h3 className="text-lg font-extrabold text-white font-display group-hover:text-sky-200 transition-colors line-clamp-2">
+                    {featuredProduct.name}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1 max-w-xs line-clamp-2">
+                    {featuredProduct.shortDesc}
+                  </p>
+                  
+                  <div className="mt-4 flex items-center gap-2">
+                    <span className="text-xs text-slate-400">
+                      Lot: {featuredProduct.variants[0]?.sku ?? 'PHR-2026'}
+                    </span>
+                    <span className="text-slate-600">&bull;</span>
+                    <span className="text-xs text-emerald-400 font-medium">
+                      {featuredProduct.stock > 0 ? 'In Stock (UK Hub)' : 'Backordered'}
+                    </span>
+                  </div>
                 </button>
+
+                <div className="pt-4 border-t border-slate-700/60 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Starting at</span>
+                    <span className="text-lg font-bold text-white">{formatPrice(featuredProduct.basePrice)}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openProductDetail(featuredProduct)}
+                    className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5"
+                  >
+                    <span>View Product</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Progress dots — sparse for large catalogues */}
+              <div className="mt-4 flex items-center justify-center gap-1.5" aria-hidden="true">
+                {slides.length <= 12 ? (
+                  slides.map((p, i) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        setOpaque(true);
+                        setIndex(i);
+                      }}
+                      className={`h-1.5 rounded-full transition-all ${
+                        i === index ? 'w-5 bg-sky-400' : 'w-1.5 bg-slate-600 hover:bg-slate-500'
+                      }`}
+                      aria-label={`Show ${p.name}`}
+                    />
+                  ))
+                ) : (
+                  <span className="text-[10px] text-slate-500 font-medium tracking-wide">
+                    {index + 1} / {slides.length}
+                  </span>
+                )}
               </div>
             </div>
           </div>

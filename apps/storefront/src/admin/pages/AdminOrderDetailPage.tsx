@@ -8,7 +8,16 @@ import { sendNotification } from '../../lib/notifyClient';
 const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'completed', 'cancelled', 'refunded'];
 const PAYMENT_STATUSES = ['pending', 'paid', 'failed', 'refunded'];
 const PAYMENT_METHODS = ['bank_transfer', 'crypto', 'card', 'other'];
-const SHIPPING_METHODS = ['tracked24', 'specialDelivery', 'standard', 'pickup'];
+const SHIPPING_METHODS = [
+  'royal_mail_24',
+  'royal_mail_special',
+  'dpd_uk',
+  'dpd_saturday',
+  'tracked24',
+  'specialDelivery',
+  'standard',
+  'pickup',
+];
 
 type AddressForm = {
   firstName: string;

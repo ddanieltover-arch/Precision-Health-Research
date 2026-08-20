@@ -19,7 +19,15 @@ import {
   Phone,
   Mail,
   ArrowRight,
-  Headphones
+  Headphones,
+  PackageSearch,
+  Building2,
+  HelpCircle,
+  Truck,
+  BadgeCheck,
+  Scale,
+  Shield,
+  RotateCcw,
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -46,7 +54,21 @@ export const Header: React.FC = () => {
   const infoSubmenuRef = useRef<HTMLDivElement>(null);
   const infoCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const infoViews = ['guide', 'peptide-guide', 'calculator', 'research', 'compare'] as const;
+  const infoViews = [
+    'guide',
+    'peptide-guide',
+    'calculator',
+    'research',
+    'compare',
+    'track',
+    'about',
+    'faq',
+    'shipping',
+    'quality',
+    'terms',
+    'privacy',
+    'refunds',
+  ] as const;
   const isInfoActive = infoViews.includes(activeView as (typeof infoViews)[number]);
 
   const infoLinks = [
@@ -75,12 +97,76 @@ export const Header: React.FC = () => {
       activeViews: ['research'],
     },
     {
+      id: 'nav-link-track',
+      to: VIEW_PATHS.track,
+      label: 'Track Order',
+      icon: PackageSearch,
+      iconClass: 'text-cyan-600',
+      activeViews: ['track'],
+    },
+    {
       id: 'nav-link-compare',
       to: VIEW_PATHS.compare,
       label: 'Compare',
       icon: Sparkles,
       iconClass: 'text-amber-500',
       activeViews: ['compare'],
+    },
+    {
+      id: 'nav-link-about',
+      to: VIEW_PATHS.about,
+      label: 'About',
+      icon: Building2,
+      iconClass: 'text-slate-600',
+      activeViews: ['about'],
+    },
+    {
+      id: 'nav-link-faq',
+      to: VIEW_PATHS.faq,
+      label: 'FAQ',
+      icon: HelpCircle,
+      iconClass: 'text-violet-500',
+      activeViews: ['faq'],
+    },
+    {
+      id: 'nav-link-shipping',
+      to: VIEW_PATHS.shipping,
+      label: 'Shipping',
+      icon: Truck,
+      iconClass: 'text-blue-500',
+      activeViews: ['shipping'],
+    },
+    {
+      id: 'nav-link-quality',
+      to: VIEW_PATHS.quality,
+      label: 'Quality',
+      icon: BadgeCheck,
+      iconClass: 'text-emerald-600',
+      activeViews: ['quality'],
+    },
+    {
+      id: 'nav-link-terms',
+      to: VIEW_PATHS.terms,
+      label: 'Terms',
+      icon: Scale,
+      iconClass: 'text-slate-500',
+      activeViews: ['terms'],
+    },
+    {
+      id: 'nav-link-privacy',
+      to: VIEW_PATHS.privacy,
+      label: 'Privacy',
+      icon: Shield,
+      iconClass: 'text-slate-500',
+      activeViews: ['privacy'],
+    },
+    {
+      id: 'nav-link-refunds',
+      to: VIEW_PATHS.refunds,
+      label: 'Refunds',
+      icon: RotateCcw,
+      iconClass: 'text-rose-500',
+      activeViews: ['refunds'],
     },
   ];
 
@@ -142,7 +228,7 @@ export const Header: React.FC = () => {
               BATCH VERIFIED ≥99% PURITY
             </span>
             <span className="hidden md:inline text-slate-300 text-xs">
-              Same-day UK laboratory dispatch on orders before 2 PM GMT &bull; Free Tracked 24 on £100+
+              Same-day UK laboratory dispatch on orders before 2 PM GMT &bull; Free Tracked 24 on £500+
             </span>
           </div>
 
@@ -425,7 +511,7 @@ export const Header: React.FC = () => {
             <div
               role="menu"
               aria-label="Info"
-              className="flex items-center justify-center gap-1 sm:gap-2 py-2.5"
+              className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 py-2.5"
             >
               {infoLinks.map((link) => {
                 const Icon = link.icon;
@@ -437,13 +523,13 @@ export const Header: React.FC = () => {
                     to={link.to}
                     role="menuitem"
                     onClick={() => setIsInfoMenuOpen(false)}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap ${
                       isActive
                         ? 'bg-white text-[#1b3552] shadow-sm border border-slate-200/90'
                         : 'text-slate-600 hover:text-[#1b3552] hover:bg-white/80 border border-transparent'
                     }`}
                   >
-                    <Icon className={`w-3.5 h-3.5 ${link.iconClass}`} />
+                    <Icon className={`w-3.5 h-3.5 shrink-0 ${link.iconClass}`} />
                     <span>{link.label}</span>
                   </Link>
                 );
@@ -477,18 +563,11 @@ export const Header: React.FC = () => {
               Catalog & Store
             </Link>
             <Link
-              to="/about"
+              to="/contact"
               onClick={closeMobileMenu}
               className="p-3 text-left bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/80 font-bold text-xs text-slate-900"
             >
-              About Lab
-            </Link>
-            <Link
-              to="/faq"
-              onClick={closeMobileMenu}
-              className="col-span-2 p-3 text-left bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/80 font-bold text-xs text-slate-900"
-            >
-              Lab FAQ
+              Contact Support
             </Link>
           </div>
 
