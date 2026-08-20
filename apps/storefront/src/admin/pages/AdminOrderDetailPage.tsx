@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AdminPageHeader } from '../AdminLayout';
 import { useAdminAuth } from '../AdminAuthContext';
@@ -6,11 +6,39 @@ import { getOrder, listOrderItems, updateOrder, type DbOrder } from '../services
 
 const ORDER_STATUSES = ['pending', 'processing', 'shipped', 'completed', 'cancelled', 'refunded'];
 const PAYMENT_STATUSES = ['pending', 'paid', 'failed', 'refunded'];
+const PAYMENT_METHODS = ['bank_transfer', 'crypto', 'card', 'other'];
+const SHIPPING_METHODS = ['tracked24', 'specialDelivery', 'standard', 'pickup'];
+
+type AddressForm = {
+  firstName: string;
+  lastName: string;
+  institution: string;
+  address: string;
+  city: string;
+  county: string;
+  postcode: string;
+  country: string;
+};
+
+function parseAddress(raw: unknown): AddressForm {
+  const obj = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  return {
+    firstName: String(obj.firstName ?? obj.first_name ?? ''),
+    lastName: String(obj.lastName ?? obj.last_name ?? ''),
+    institution: String(obj.institution ?? ''),
+    address: String(obj.address ?? obj.line1 ?? ''),
+    city: String(obj.city ?? ''),
+    county: String(obj.county ?? obj.state ?? ''),
+    postcode: String(obj.postcode ?? obj.zip ?? ''),
+    country: String(obj.country ?? 'United Kingdom'),
+  };
+}
 
 export const AdminOrderDetailPage: React.FC = () => {
   const { id = '' } = useParams();
   const { canWriteSales } = useAdminAuth();
   const [order, setOrder] = useState<DbOrder | null>(null);
+  const [address, setAddress] = useState<AddressForm>(parseAddress(null));
   const [items, setItems] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -23,6 +51,7 @@ export const AdminOrderDetailPage: React.FC = () => {
         const [o, lines] = await Promise.all([getOrder(id), listOrderItems(id)]);
         if (!alive) return;
         setOrder(o);
+        setAddress(parseAddress(o?.shipping_address_json));
         setItems(lines);
         if (!o) setError('Order not found');
       } catch (e) {
@@ -34,6 +63,11 @@ export const AdminOrderDetailPage: React.FC = () => {
     };
   }, [id]);
 
+  const lineTotal = useMemo(
+    () => items.reduce((sum, item) => sum + Number(item.unit_price || 0) * Number(item.quantity || 0), 0),
+    [items]
+  );
+
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!order || !canWriteSales) return;
@@ -42,14 +76,22 @@ export const AdminOrderDetailPage: React.FC = () => {
     setError('');
     try {
       const updated = await updateOrder(order.id, {
+        order_number: order.order_number,
         status: order.status,
         payment_status: order.payment_status,
+        payment_method: order.payment_method,
+        shipping_method: order.shipping_method,
+        subtotal: order.subtotal,
+        shipping_cost: order.shipping_cost,
+        total: order.total,
         notes: order.notes,
         contact_email: order.contact_email,
         contact_phone: order.contact_phone,
+        shipping_address_json: address,
       });
       setOrder(updated);
-      setMessage('Order updated');
+      setAddress(parseAddress(updated.shipping_address_json));
+      setMessage('Order saved');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Save failed');
     } finally {
@@ -62,11 +104,13 @@ export const AdminOrderDetailPage: React.FC = () => {
     return <div className="text-sm text-red-600">{error}</div>;
   }
 
+  const disabled = !canWriteSales;
+
   return (
     <div className="space-y-6">
       <AdminPageHeader
         title={order.order_number || order.id.slice(0, 8)}
-        subtitle="Order detail and fulfillment controls"
+        subtitle="Edit fulfillment, payment, totals, and shipping address"
         actions={
           <Link to="/admin/orders" className="text-xs font-bold text-slate-500 hover:text-[var(--brand-primary)]">
             ← Orders
@@ -76,84 +120,222 @@ export const AdminOrderDetailPage: React.FC = () => {
 
       {message && <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800">{message}</div>}
       {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">{error}</div>}
-
-      <form onSubmit={onSave} className="rounded-2xl border border-[var(--brand-border)] bg-white p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <label className="space-y-1.5 block">
-          <span className="text-xs font-bold text-slate-700">Status</span>
-          <select
-            disabled={!canWriteSales}
-            value={order.status || 'pending'}
-            onChange={(e) => setOrder({ ...order, status: e.target.value })}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          >
-            {ORDER_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="space-y-1.5 block">
-          <span className="text-xs font-bold text-slate-700">Payment status</span>
-          <select
-            disabled={!canWriteSales}
-            value={order.payment_status || 'pending'}
-            onChange={(e) => setOrder({ ...order, payment_status: e.target.value })}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          >
-            {PAYMENT_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="space-y-1.5 block">
-          <span className="text-xs font-bold text-slate-700">Contact email</span>
-          <input
-            disabled={!canWriteSales}
-            value={order.contact_email || ''}
-            onChange={(e) => setOrder({ ...order, contact_email: e.target.value })}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          />
-        </label>
-        <label className="space-y-1.5 block">
-          <span className="text-xs font-bold text-slate-700">Contact phone</span>
-          <input
-            disabled={!canWriteSales}
-            value={order.contact_phone || ''}
-            onChange={(e) => setOrder({ ...order, contact_phone: e.target.value })}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          />
-        </label>
-        <label className="space-y-1.5 block md:col-span-2">
-          <span className="text-xs font-bold text-slate-700">Notes</span>
-          <textarea
-            disabled={!canWriteSales}
-            rows={3}
-            value={order.notes || ''}
-            onChange={(e) => setOrder({ ...order, notes: e.target.value })}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          />
-        </label>
-        <div className="md:col-span-2 text-xs text-slate-500 space-y-1">
-          <div>Total: <strong className="text-slate-900">{order.total != null ? `£${Number(order.total).toFixed(2)}` : '—'}</strong></div>
-          <div>Payment: {order.payment_method || '—'} · Shipping: {order.shipping_method || '—'}</div>
+      {!canWriteSales && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
+          Your role is read-only for sales. Sign in as ADMIN / SUPER_ADMIN / SALES_MANAGER to edit.
         </div>
+      )}
+
+      <form onSubmit={onSave} className="space-y-6">
+        <section className="rounded-2xl border border-[var(--brand-border)] bg-white p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h2 className="md:col-span-2 text-sm font-extrabold text-slate-900">Order details</h2>
+
+          <label className="space-y-1.5 block">
+            <span className="text-xs font-bold text-slate-700">Order number</span>
+            <input
+              disabled={disabled}
+              value={order.order_number || ''}
+              onChange={(e) => setOrder({ ...order, order_number: e.target.value })}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+            />
+          </label>
+
+          <label className="space-y-1.5 block">
+            <span className="text-xs font-bold text-slate-700">Fulfillment status</span>
+            <select
+              disabled={disabled}
+              value={order.status || 'pending'}
+              onChange={(e) => setOrder({ ...order, status: e.target.value })}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+            >
+              {!ORDER_STATUSES.includes(order.status || '') && order.status && (
+                <option value={order.status}>{order.status}</option>
+              )}
+              {ORDER_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-1.5 block">
+            <span className="text-xs font-bold text-slate-700">Payment status</span>
+            <select
+              disabled={disabled}
+              value={order.payment_status || 'pending'}
+              onChange={(e) => setOrder({ ...order, payment_status: e.target.value })}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+            >
+              {!PAYMENT_STATUSES.includes(order.payment_status || '') && order.payment_status && (
+                <option value={order.payment_status}>{order.payment_status}</option>
+              )}
+              {PAYMENT_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-1.5 block">
+            <span className="text-xs font-bold text-slate-700">Payment method</span>
+            <select
+              disabled={disabled}
+              value={order.payment_method || ''}
+              onChange={(e) => setOrder({ ...order, payment_method: e.target.value })}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+            >
+              <option value="">—</option>
+              {!PAYMENT_METHODS.includes(order.payment_method || '') && order.payment_method && (
+                <option value={order.payment_method}>{order.payment_method}</option>
+              )}
+              {PAYMENT_METHODS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-1.5 block">
+            <span className="text-xs font-bold text-slate-700">Shipping method</span>
+            <select
+              disabled={disabled}
+              value={order.shipping_method || ''}
+              onChange={(e) => setOrder({ ...order, shipping_method: e.target.value })}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+            >
+              <option value="">—</option>
+              {!SHIPPING_METHODS.includes(order.shipping_method || '') && order.shipping_method && (
+                <option value={order.shipping_method}>{order.shipping_method}</option>
+              )}
+              {SHIPPING_METHODS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-1.5 block">
+            <span className="text-xs font-bold text-slate-700">Contact email</span>
+            <input
+              disabled={disabled}
+              type="email"
+              value={order.contact_email || ''}
+              onChange={(e) => setOrder({ ...order, contact_email: e.target.value })}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+            />
+          </label>
+
+          <label className="space-y-1.5 block">
+            <span className="text-xs font-bold text-slate-700">Contact phone</span>
+            <input
+              disabled={disabled}
+              value={order.contact_phone || ''}
+              onChange={(e) => setOrder({ ...order, contact_phone: e.target.value })}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+            />
+          </label>
+
+          <label className="space-y-1.5 block">
+            <span className="text-xs font-bold text-slate-700">Subtotal (£)</span>
+            <input
+              disabled={disabled}
+              type="number"
+              step="0.01"
+              value={order.subtotal ?? ''}
+              onChange={(e) =>
+                setOrder({ ...order, subtotal: e.target.value === '' ? null : Number(e.target.value) })
+              }
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+            />
+          </label>
+
+          <label className="space-y-1.5 block">
+            <span className="text-xs font-bold text-slate-700">Shipping cost (£)</span>
+            <input
+              disabled={disabled}
+              type="number"
+              step="0.01"
+              value={order.shipping_cost ?? ''}
+              onChange={(e) =>
+                setOrder({ ...order, shipping_cost: e.target.value === '' ? null : Number(e.target.value) })
+              }
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+            />
+          </label>
+
+          <label className="space-y-1.5 block">
+            <span className="text-xs font-bold text-slate-700">Total (£)</span>
+            <input
+              disabled={disabled}
+              type="number"
+              step="0.01"
+              value={order.total ?? ''}
+              onChange={(e) =>
+                setOrder({ ...order, total: e.target.value === '' ? null : Number(e.target.value) })
+              }
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+            />
+          </label>
+
+          <label className="space-y-1.5 block md:col-span-2">
+            <span className="text-xs font-bold text-slate-700">Internal notes</span>
+            <textarea
+              disabled={disabled}
+              rows={3}
+              value={order.notes || ''}
+              onChange={(e) => setOrder({ ...order, notes: e.target.value })}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+            />
+          </label>
+        </section>
+
+        <section className="rounded-2xl border border-[var(--brand-border)] bg-white p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h2 className="md:col-span-2 text-sm font-extrabold text-slate-900">Shipping address</h2>
+          {(
+            [
+              ['firstName', 'First name'],
+              ['lastName', 'Last name'],
+              ['institution', 'Institution'],
+              ['address', 'Address'],
+              ['city', 'City'],
+              ['county', 'County'],
+              ['postcode', 'Postcode'],
+              ['country', 'Country'],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key} className="space-y-1.5 block">
+              <span className="text-xs font-bold text-slate-700">{label}</span>
+              <input
+                disabled={disabled}
+                value={address[key]}
+                onChange={(e) => setAddress({ ...address, [key]: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm disabled:bg-slate-50"
+              />
+            </label>
+          ))}
+        </section>
+
         {canWriteSales && (
           <button
             type="submit"
             disabled={saving}
-            className="md:col-span-2 w-fit rounded-xl bg-[var(--brand-primary)] text-white px-4 py-2.5 text-xs font-bold disabled:opacity-60"
+            className="rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white px-5 py-2.5 text-xs font-bold disabled:opacity-60"
           >
-            {saving ? 'Saving…' : 'Save order'}
+            {saving ? 'Saving…' : 'Save order changes'}
           </button>
         )}
       </form>
 
       <section className="rounded-2xl border border-[var(--brand-border)] bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-100">
+        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-sm font-extrabold text-slate-900">Line items</h2>
+          <span className="text-xs text-slate-500">
+            Lines total: <strong className="text-slate-800">£{lineTotal.toFixed(2)}</strong>
+          </span>
         </div>
         <table className="w-full text-left text-xs">
           <thead className="bg-slate-50 text-slate-500">
@@ -161,23 +343,29 @@ export const AdminOrderDetailPage: React.FC = () => {
               <th className="px-4 py-2 font-bold">Product</th>
               <th className="px-4 py-2 font-bold">Qty</th>
               <th className="px-4 py-2 font-bold">Unit</th>
+              <th className="px-4 py-2 font-bold">Line</th>
             </tr>
           </thead>
           <tbody>
             {items.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-slate-400">
+                <td colSpan={4} className="px-4 py-6 text-center text-slate-400">
                   No line items
                 </td>
               </tr>
             )}
-            {items.map((item) => (
-              <tr key={item.id} className="border-t border-slate-100">
-                <td className="px-4 py-2.5">{item.products?.name || item.product_id}</td>
-                <td className="px-4 py-2.5">{item.quantity}</td>
-                <td className="px-4 py-2.5">£{Number(item.unit_price || 0).toFixed(2)}</td>
-              </tr>
-            ))}
+            {items.map((item) => {
+              const qty = Number(item.quantity || 0);
+              const unit = Number(item.unit_price || 0);
+              return (
+                <tr key={item.id} className="border-t border-slate-100">
+                  <td className="px-4 py-2.5">{item.products?.name || item.product_id}</td>
+                  <td className="px-4 py-2.5">{qty}</td>
+                  <td className="px-4 py-2.5">£{unit.toFixed(2)}</td>
+                  <td className="px-4 py-2.5 font-semibold">£{(qty * unit).toFixed(2)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </section>
