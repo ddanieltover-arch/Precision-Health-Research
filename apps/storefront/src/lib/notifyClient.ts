@@ -7,6 +7,8 @@ export type NotifyType =
 
 export interface OrderLineItemPayload {
   name: string;
+  slug?: string;
+  productId?: string;
   variant?: string;
   quantity: number;
   unitPrice: number;

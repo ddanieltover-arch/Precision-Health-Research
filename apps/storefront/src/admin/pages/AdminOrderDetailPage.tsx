@@ -22,7 +22,6 @@ const SHIPPING_METHODS = [
 type AddressForm = {
   firstName: string;
   lastName: string;
-  institution: string;
   address: string;
   city: string;
   county: string;
@@ -35,7 +34,6 @@ function parseAddress(raw: unknown): AddressForm {
   return {
     firstName: String(obj.firstName ?? obj.first_name ?? ''),
     lastName: String(obj.lastName ?? obj.last_name ?? ''),
-    institution: String(obj.institution ?? ''),
     address: String(obj.address ?? obj.line1 ?? ''),
     city: String(obj.city ?? ''),
     county: String(obj.county ?? obj.state ?? ''),
@@ -124,7 +122,6 @@ export const AdminOrderDetailPage: React.FC = () => {
           shippingMethod: updated.shipping_method || undefined,
           shippingAddress: [
             [address.firstName, address.lastName].filter(Boolean).join(' '),
-            address.institution,
             address.address,
             address.city,
             address.county,
@@ -360,7 +357,6 @@ export const AdminOrderDetailPage: React.FC = () => {
             [
               ['firstName', 'First name'],
               ['lastName', 'Last name'],
-              ['institution', 'Institution'],
               ['address', 'Address'],
               ['city', 'City'],
               ['county', 'County'],

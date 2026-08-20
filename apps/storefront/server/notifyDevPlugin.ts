@@ -1,9 +1,10 @@
 import type { Plugin } from 'vite';
 import { loadEnv } from 'vite';
 import { handleNotifyRequest } from './email/send.js';
+import { handleCreateOrderRequest } from './orders/createOrder.js';
 
 /**
- * Local /api/notify endpoint so Resend works during `vite` without Vercel CLI.
+ * Local /api/* endpoints so Resend + order persistence work during `vite` without Vercel CLI.
  */
 export function notifyDevPlugin(): Plugin {
   return {
@@ -18,7 +19,7 @@ export function notifyDevPlugin(): Plugin {
 
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split('?')[0];
-        if (url !== '/api/notify') {
+        if (url !== '/api/notify' && url !== '/api/create-order') {
           next();
           return;
         }
@@ -46,7 +47,10 @@ export function notifyDevPlugin(): Plugin {
           }
           const raw = Buffer.concat(chunks).toString('utf8');
           const body = raw ? JSON.parse(raw) : {};
-          const { status, result } = await handleNotifyRequest(body);
+          const { status, result } =
+            url === '/api/create-order'
+              ? await handleCreateOrderRequest(body)
+              : await handleNotifyRequest(body);
           res.statusCode = status;
           res.setHeader('Content-Type', 'application/json');
           res.setHeader('Access-Control-Allow-Origin', '*');
@@ -57,7 +61,7 @@ export function notifyDevPlugin(): Plugin {
           res.end(
             JSON.stringify({
               ok: false,
-              error: err instanceof Error ? err.message : 'Notify middleware failed',
+              error: err instanceof Error ? err.message : 'API middleware failed',
             }),
           );
         }

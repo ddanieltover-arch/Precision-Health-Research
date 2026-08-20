@@ -216,6 +216,63 @@ export async function processNotification(payload: NotifyPayload): Promise<Notif
     };
   }
 
+  // Persist storefront orders so admin CMS stays in sync (idempotent by order number).
+  if (payload.type === 'order_confirmation') {
+    try {
+      const { handleCreateOrderRequest } = await import('../orders/createOrder.js');
+      const fullName = String(payload.name || '').trim();
+      const nameParts = fullName.split(/\s+/).filter(Boolean);
+      const firstName = nameParts[0] || 'Customer';
+      const lastName = nameParts.slice(1).join(' ');
+      const lines = String(payload.shippingAddress || '')
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .filter((line) => line.toLowerCase() !== fullName.toLowerCase());
+      const countryIdx = lines.findIndex((line) =>
+        /united kingdom|^uk$|united states|^usa$/i.test(line),
+      );
+      const country = countryIdx >= 0 ? lines[countryIdx] : 'United Kingdom';
+      const rest = countryIdx >= 0 ? lines.filter((_, i) => i !== countryIdx) : lines;
+      const postcode = rest.length >= 1 ? rest[rest.length - 1] : 'N/A';
+      const city = rest.length >= 2 ? rest[1] : 'Unknown';
+      const county = rest.length >= 4 ? rest[2] : '';
+      const street = rest[0] || 'Address not provided';
+
+      const persist = await handleCreateOrderRequest({
+        orderNumber: built.orderId,
+        email: payload.email,
+        phone: payload.phone || '',
+        firstName,
+        lastName,
+        address: street,
+        city,
+        county: county || undefined,
+        postcode,
+        country,
+        paymentMethod: payload.paymentMethod || 'bank_transfer',
+        shippingMethod: payload.shippingMethod || '',
+        subtotal: payload.subtotal ?? payload.total ?? 0,
+        shippingCost: payload.shippingCost ?? 0,
+        total: payload.total ?? 0,
+        notes: payload.notes,
+        items: (payload.items || []).map((item) => ({
+          slug: item.slug,
+          productId: item.productId,
+          name: item.name,
+          variant: item.variant,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
+      });
+      if (!persist.result.ok) {
+        console.error('[notify] order persist failed:', persist.result.error);
+      }
+    } catch (err) {
+      console.error('[notify] order persist crashed:', err);
+    }
+  }
+
   return {
     ok: true,
     ticketId: built.ticketId,

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { sendNotification } from '../../lib/notifyClient';
+import { createStorefrontOrder } from '../../lib/createOrderClient';
 import {
   FREE_SHIPPING_THRESHOLD_GBP,
   UK_SHIPPING_OPTIONS,
@@ -22,7 +23,8 @@ import {
   AlertCircle,
   FlaskConical,
   CreditCard,
-  Mail
+  Mail,
+  Phone
 } from 'lucide-react';
 
 export const CheckoutModal: React.FC = () => {
@@ -78,8 +80,17 @@ export const CheckoutModal: React.FC = () => {
 
   const handleDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.firstName || !formData.email || !formData.address || !formData.city || !formData.postcode) {
-      addToast('Missing Fields', 'Please complete all required UK shipping fields.', 'warning');
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (
+      !formData.firstName ||
+      !formData.email ||
+      !formData.phone ||
+      phoneDigits.length < 7 ||
+      !formData.address ||
+      !formData.city ||
+      !formData.postcode
+    ) {
+      addToast('Missing Fields', 'Please complete all required UK shipping fields, including phone.', 'warning');
       return;
     }
     setStep('payment');
@@ -112,6 +123,8 @@ export const CheckoutModal: React.FC = () => {
 
     const items = cart.map((item) => ({
       name: item.name,
+      slug: item.slug,
+      productId: item.productId,
       variant: item.variantName || undefined,
       quantity: item.quantity,
       unitPrice: item.price,
@@ -119,12 +132,48 @@ export const CheckoutModal: React.FC = () => {
     }));
 
     try {
+      const saved = await createStorefrontOrder({
+        orderNumber: generatedId,
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        address: formData.address.trim(),
+        city: formData.city.trim(),
+        county: formData.county.trim() || undefined,
+        postcode: formData.postcode.trim(),
+        country: 'United Kingdom',
+        paymentMethod,
+        shippingMethod: selectedShipping.label,
+        subtotal: cartTotal,
+        shippingCost,
+        total: grandTotal,
+        items: items.map((item) => ({
+          slug: item.slug,
+          productId: item.productId,
+          name: item.name,
+          variant: item.variant,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        })),
+      });
+
+      if (!saved.ok) {
+        addToast(
+          'Saving Order…',
+          saved.error || 'Direct save failed — still sending confirmation email.',
+          'warning',
+        );
+      }
+
+      const confirmedOrderId = saved.orderNumber || generatedId;
+
       const result = await sendNotification({
         type: 'order_confirmation',
-        orderId: generatedId,
+        orderId: confirmedOrderId,
         email: formData.email.trim(),
         name: fullName,
-        phone: formData.phone.trim() || undefined,
+        phone: formData.phone.trim(),
         paymentMethod,
         shippingMethod: selectedShipping.label,
         shippingEta: selectedShipping.eta,
@@ -137,17 +186,28 @@ export const CheckoutModal: React.FC = () => {
         currency: 'GBP',
       });
 
-      if (!result.ok) {
-        addToast('Order Email Failed', result.error || 'Order was not emailed. Please contact support.', 'warning');
+      if (!result.ok && !saved.ok) {
+        addToast('Order Failed', result.error || saved.error || 'Could not place order.', 'warning');
         setIsSubmitting(false);
         return;
       }
 
-      setOrderId(result.orderId || generatedId);
+      if (!result.ok) {
+        addToast(
+          'Order Saved',
+          `Order ${confirmedOrderId} is registered, but email failed: ${result.error || 'contact support'}.`,
+          'warning',
+        );
+      } else if (saved.ok) {
+        addToast('Order Placed', `Order ${confirmedOrderId} saved and emailed to you and our lab desk.`, 'success');
+      } else {
+        addToast('Order Placed', `Order ${confirmedOrderId} emailed — admin sync may take a moment.`, 'success');
+      }
+
+      setOrderId(confirmedOrderId);
       setConfirmedTotal(grandTotal);
       setStep('confirmation');
       clearCart();
-      addToast('Order Placed', `Order ${result.orderId || generatedId} emailed to you and our lab desk.`, 'success');
     } catch (err) {
       addToast('Order Failed', err instanceof Error ? err.message : 'Network error', 'warning');
     } finally {
@@ -244,17 +304,35 @@ export const CheckoutModal: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="text-[11px] font-semibold text-slate-600 block mb-1">Email Address *</label>
-                <input
-                  type="email"
-                  required
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="researcher@lab.ac.uk"
-                  className="w-full text-xs p-2.5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-[#335e90]"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-600 block mb-1">Email Address *</label>
+                  <input
+                    type="email"
+                    required
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="researcher@lab.ac.uk"
+                    className="w-full text-xs p-2.5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-[#335e90]"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-600 mb-1 flex items-center gap-1">
+                    <Phone className="w-3 h-3 text-slate-400" />
+                    Phone *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="+44 7400 123456"
+                    autoComplete="tel"
+                    className="w-full text-xs p-2.5 bg-slate-50 rounded-xl border border-slate-200 outline-none focus:border-[#335e90]"
+                  />
+                </div>
               </div>
 
               <div>
