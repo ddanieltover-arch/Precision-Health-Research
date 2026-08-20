@@ -116,10 +116,29 @@ export const AdminOrderDetailPage: React.FC = () => {
           type: 'order_status',
           email: updated.contact_email,
           name: [address.firstName, address.lastName].filter(Boolean).join(' ') || undefined,
+          phone: updated.contact_phone || undefined,
           orderId: updated.order_number || updated.id,
           orderStatus: updated.status || 'updated',
           paymentStatus: updated.payment_status || undefined,
+          paymentMethod: updated.payment_method || undefined,
+          shippingMethod: updated.shipping_method || undefined,
+          shippingAddress: [
+            [address.firstName, address.lastName].filter(Boolean).join(' '),
+            address.institution,
+            address.address,
+            address.city,
+            address.county,
+            address.postcode,
+            address.country,
+          ]
+            .filter(Boolean)
+            .join('\n') || undefined,
           message: updated.notes || undefined,
+          notes: updated.notes || undefined,
+          subtotal: updated.subtotal ?? undefined,
+          shippingCost: updated.shipping_cost ?? undefined,
+          total: updated.total ?? undefined,
+          currency: 'GBP',
         });
         if (notify.ok) {
           setMessage('Order saved · status emails sent to customer and admin');

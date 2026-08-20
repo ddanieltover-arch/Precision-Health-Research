@@ -27,6 +27,7 @@ export interface NotifyRequest {
   paymentMethod?: string;
   paymentStatus?: string;
   shippingMethod?: string;
+  shippingEta?: string;
   shippingAddress?: string;
   items?: OrderLineItemPayload[];
   subtotal?: number;

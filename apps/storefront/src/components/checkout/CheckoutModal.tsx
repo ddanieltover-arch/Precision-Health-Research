@@ -127,6 +127,7 @@ export const CheckoutModal: React.FC = () => {
         phone: formData.phone.trim() || undefined,
         paymentMethod,
         shippingMethod: selectedShipping.label,
+        shippingEta: selectedShipping.eta,
         shippingAddress,
         items,
         subtotal: cartTotal,

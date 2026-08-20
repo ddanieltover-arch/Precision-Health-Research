@@ -96,17 +96,38 @@ function layout(options: {
 </html>`;
 }
 
-function detailRow(label: string, value: string): string {
+function detailRow(label: string, valueHtml: string): string {
   return `<tr>
     <td style="padding:8px 0;border-bottom:1px solid #e2e8f0;width:38%;font-size:12px;color:#64748b;vertical-align:top;">${escapeHtml(label)}</td>
-    <td style="padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:13px;color:#0f172a;font-weight:600;vertical-align:top;">${value}</td>
+    <td style="padding:8px 0;border-bottom:1px solid #e2e8f0;font-size:13px;color:#0f172a;font-weight:600;vertical-align:top;">${valueHtml}</td>
   </tr>`;
 }
 
 function detailsTable(rows: Array<[string, string]>): string {
+  if (!rows.length) return '';
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 8px 0;">
     ${rows.map(([label, value]) => detailRow(label, value)).join('')}
   </table>`;
+}
+
+/** Build detail rows from submitted values — skips blank optional fields. */
+function submittedDetails(
+  rows: Array<[string, string | number | undefined | null, { html?: boolean; multiline?: boolean; always?: boolean }?]>,
+): string {
+  const out: Array<[string, string]> = [];
+  for (const [label, raw, opts] of rows) {
+    const text = raw == null ? '' : String(raw).trim();
+    if (!text && !opts?.always) continue;
+    const display = text || '—';
+    if (opts?.html) {
+      out.push([label, display]);
+    } else if (opts?.multiline) {
+      out.push([label, `<div style="white-space:pre-wrap;font-weight:500;">${escapeHtml(display)}</div>`]);
+    } else {
+      out.push([label, escapeHtml(display)]);
+    }
+  }
+  return detailsTable(out);
 }
 
 function itemsTable(items: OrderLineItem[] | undefined, currency = 'GBP'): string {
@@ -119,6 +140,7 @@ function itemsTable(items: OrderLineItem[] | undefined, currency = 'GBP'): strin
           ${item.variant ? `<div style="font-size:12px;color:#64748b;font-weight:400;">${escapeHtml(item.variant)}</div>` : ''}
         </td>
         <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:13px;text-align:center;color:#334155;">${item.quantity}</td>
+        <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:13px;text-align:right;color:#334155;">${escapeHtml(formatMoney(item.unitPrice, currency))}</td>
         <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;font-size:13px;text-align:right;color:#0f172a;font-weight:600;">${escapeHtml(formatMoney(item.lineTotal, currency))}</td>
       </tr>`,
     )
@@ -127,10 +149,33 @@ function itemsTable(items: OrderLineItem[] | undefined, currency = 'GBP'): strin
     <tr>
       <td style="padding:0 0 8px 0;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;font-weight:700;">Compound</td>
       <td style="padding:0 0 8px 0;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;font-weight:700;text-align:center;">Qty</td>
-      <td style="padding:0 0 8px 0;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;font-weight:700;text-align:right;">Total</td>
+      <td style="padding:0 0 8px 0;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;font-weight:700;text-align:right;">Unit</td>
+      <td style="padding:0 0 8px 0;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;font-weight:700;text-align:right;">Line</td>
     </tr>
     ${rows}
   </table>`;
+}
+
+function orderTotalsHtml(payload: NotifyPayload): string {
+  const currency = payload.currency || 'GBP';
+  const rows: Array<[string, string]> = [
+    ['Subtotal', escapeHtml(formatMoney(payload.subtotal, currency))],
+    ['Shipping', escapeHtml(formatMoney(payload.shippingCost, currency))],
+  ];
+  if ((payload.discount || 0) > 0) {
+    rows.push(['Discount', escapeHtml(`−${formatMoney(payload.discount, currency)}`)]);
+  }
+  rows.push([
+    'Order total',
+    `<span style="font-size:16px;color:${BRAND.primary};">${escapeHtml(formatMoney(payload.total, currency))}</span>`,
+  ]);
+  return detailsTable(rows);
+}
+
+function paymentLabel(method?: string): string {
+  if (method === 'crypto') return 'Cryptocurrency (BTC) — 5% discount applied';
+  if (method === 'bank_transfer') return 'UK Bank Transfer (Faster Payments)';
+  return method?.trim() || '';
 }
 
 function ctaButton(label: string, href: string): string {
@@ -146,17 +191,29 @@ function greeting(name?: string): string {
   return safe ? `Hello ${escapeHtml(safe)},` : 'Hello,';
 }
 
+function mono(value: string): string {
+  return `<span style="font-family:ui-monospace,Consolas,monospace;">${escapeHtml(value)}</span>`;
+}
+
+function mailtoLink(email: string): string {
+  return `<a href="mailto:${escapeHtml(email)}" style="color:${BRAND.primary};">${escapeHtml(email)}</a>`;
+}
+
 export function buildContactUserEmail(payload: NotifyPayload, ticketId: string) {
   const html = layout({
     preheader: `We received your inquiry ${ticketId}`,
     title: 'Inquiry received',
     bodyHtml: `
       <p style="margin:0 0 12px 0;">${greeting(payload.name)}</p>
-      <p style="margin:0 0 12px 0;">Thank you for contacting ${escapeHtml(BRAND.name)}. Your analytical inquiry has been logged and assigned to our laboratory support desk.</p>
-      ${detailsTable([
-        ['Ticket reference', `<span style="font-family:ui-monospace,Consolas,monospace;">${escapeHtml(ticketId)}</span>`],
-        ['Subject', escapeHtml(payload.subject || 'Analytical inquiry')],
-        ['Message', `<div style="white-space:pre-wrap;font-weight:500;">${escapeHtml(payload.message || '')}</div>`],
+      <p style="margin:0 0 12px 0;">Thank you for contacting ${escapeHtml(BRAND.name)}. Here is a copy of everything you submitted.</p>
+      ${submittedDetails([
+        ['Ticket reference', mono(ticketId), { html: true, always: true }],
+        ['Name', payload.name, { always: true }],
+        ['Email', mailtoLink(payload.email), { html: true, always: true }],
+        ['Subject', payload.subject || 'Analytical inquiry', { always: true }],
+        ['Message', payload.message, { multiline: true, always: true }],
+        ['Phone', payload.phone],
+        ['Institution', payload.institution],
       ])}
       <p style="margin:16px 0 0 0;">A specialist typically responds within <strong>4 business hours</strong> (Mon–Fri, 08:00–18:00 GMT).</p>
       ${ctaButton('Visit laboratory storefront', BRAND.site)}
@@ -174,13 +231,15 @@ export function buildContactAdminEmail(payload: NotifyPayload, ticketId: string)
     preheader: `New contact inquiry from ${payload.name || payload.email}`,
     title: 'New contact inquiry',
     bodyHtml: `
-      <p style="margin:0 0 12px 0;">A new laboratory support inquiry was submitted on the storefront.</p>
-      ${detailsTable([
-        ['Ticket', `<span style="font-family:ui-monospace,Consolas,monospace;">${escapeHtml(ticketId)}</span>`],
-        ['Name', escapeHtml(payload.name || '—')],
-        ['Email', `<a href="mailto:${escapeHtml(payload.email)}" style="color:${BRAND.primary};">${escapeHtml(payload.email)}</a>`],
-        ['Subject', escapeHtml(payload.subject || '—')],
-        ['Message', `<div style="white-space:pre-wrap;font-weight:500;">${escapeHtml(payload.message || '')}</div>`],
+      <p style="margin:0 0 12px 0;">A new laboratory support inquiry was submitted on the storefront. Full submission details:</p>
+      ${submittedDetails([
+        ['Ticket', mono(ticketId), { html: true, always: true }],
+        ['Name', payload.name, { always: true }],
+        ['Email', mailtoLink(payload.email), { html: true, always: true }],
+        ['Phone', payload.phone],
+        ['Institution', payload.institution],
+        ['Subject', payload.subject || '—', { always: true }],
+        ['Message', payload.message, { multiline: true, always: true }],
       ])}
       ${ctaButton('Reply to researcher', `mailto:${encodeURIComponent(payload.email)}?subject=${encodeURIComponent(`Re: ${payload.subject || ticketId}`)}`)}
     `,
@@ -199,7 +258,10 @@ export function buildNewsletterUserEmail(payload: NotifyPayload) {
     bodyHtml: `
       <p style="margin:0 0 12px 0;">${greeting(payload.name)}</p>
       <p style="margin:0 0 12px 0;">You are now subscribed to ${escapeHtml(BRAND.name)} research alerts. We will notify you about new compound releases, batch synthesis updates, and COA availability.</p>
-      ${detailsTable([['Subscribed email', escapeHtml(payload.email)]])}
+      ${submittedDetails([
+        ['Subscribed email', mailtoLink(payload.email), { html: true, always: true }],
+        ['Name', payload.name],
+      ])}
       <p style="margin:16px 0 0 0;">You can unsubscribe at any time by replying to this email with <strong>UNSUBSCRIBE</strong>.</p>
       ${ctaButton('Browse catalog', `${BRAND.site}/catalog`)}
     `,
@@ -216,9 +278,10 @@ export function buildNewsletterAdminEmail(payload: NotifyPayload) {
     title: 'New newsletter subscriber',
     bodyHtml: `
       <p style="margin:0 0 12px 0;">A researcher subscribed to laboratory alerts from the storefront footer.</p>
-      ${detailsTable([
-        ['Email', `<a href="mailto:${escapeHtml(payload.email)}" style="color:${BRAND.primary};">${escapeHtml(payload.email)}</a>`],
-        ['Source', 'Storefront newsletter form'],
+      ${submittedDetails([
+        ['Email', mailtoLink(payload.email), { html: true, always: true }],
+        ['Name', payload.name],
+        ['Source', 'Storefront newsletter form', { always: true }],
       ])}
     `,
   });
@@ -235,10 +298,12 @@ export function buildQuickInquiryUserEmail(payload: NotifyPayload, ticketId: str
     title: 'Quick inquiry received',
     bodyHtml: `
       <p style="margin:0 0 12px 0;">${greeting(payload.name)}</p>
-      <p style="margin:0 0 12px 0;">Your direct compound inquiry has been dispatched to our scientific support team.</p>
-      ${detailsTable([
-        ['Ticket reference', `<span style="font-family:ui-monospace,Consolas,monospace;">${escapeHtml(ticketId)}</span>`],
-        ['Message', `<div style="white-space:pre-wrap;font-weight:500;">${escapeHtml(payload.message || '')}</div>`],
+      <p style="margin:0 0 12px 0;">Your direct compound inquiry has been dispatched to our scientific support team. Here is a copy of your submission:</p>
+      ${submittedDetails([
+        ['Ticket reference', mono(ticketId), { html: true, always: true }],
+        ['Name', payload.name],
+        ['Email', mailtoLink(payload.email), { html: true, always: true }],
+        ['Message', payload.message, { multiline: true, always: true }],
       ])}
       <p style="margin:16px 0 0 0;">Expect a reply within <strong>4 business hours</strong> via email or WhatsApp.</p>
     `,
@@ -254,12 +319,12 @@ export function buildQuickInquiryAdminEmail(payload: NotifyPayload, ticketId: st
     preheader: `Quick inquiry from ${payload.email}`,
     title: 'New quick inquiry',
     bodyHtml: `
-      <p style="margin:0 0 12px 0;">A researcher submitted a quick inquiry from the floating Lab Support panel.</p>
-      ${detailsTable([
-        ['Ticket', `<span style="font-family:ui-monospace,Consolas,monospace;">${escapeHtml(ticketId)}</span>`],
-        ['Name', escapeHtml(payload.name || '—')],
-        ['Email', `<a href="mailto:${escapeHtml(payload.email)}" style="color:${BRAND.primary};">${escapeHtml(payload.email)}</a>`],
-        ['Message', `<div style="white-space:pre-wrap;font-weight:500;">${escapeHtml(payload.message || '')}</div>`],
+      <p style="margin:0 0 12px 0;">A researcher submitted a quick inquiry from the floating Lab Support panel. Full details:</p>
+      ${submittedDetails([
+        ['Ticket', mono(ticketId), { html: true, always: true }],
+        ['Name', payload.name || 'Not provided', { always: true }],
+        ['Email', mailtoLink(payload.email), { html: true, always: true }],
+        ['Message', payload.message, { multiline: true, always: true }],
       ])}
       ${ctaButton('Reply to researcher', `mailto:${encodeURIComponent(payload.email)}?subject=${encodeURIComponent(`Re: ${ticketId}`)}`)}
     `,
@@ -274,34 +339,28 @@ export function buildQuickInquiryAdminEmail(payload: NotifyPayload, ticketId: st
 export function buildOrderUserEmail(payload: NotifyPayload) {
   const currency = payload.currency || 'GBP';
   const orderId = payload.orderId || 'PHR-ORDER';
-  const paymentLabel =
-    payload.paymentMethod === 'crypto'
-      ? 'Cryptocurrency (BTC) — 5% discount applied'
-      : 'UK Bank Transfer (Faster Payments)';
-
-  const totalsHtml = `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 4px 0;">
-      ${detailRow('Subtotal', escapeHtml(formatMoney(payload.subtotal, currency)))}
-      ${detailRow('Shipping', escapeHtml(formatMoney(payload.shippingCost, currency)))}
-      ${(payload.discount || 0) > 0 ? detailRow('Discount', escapeHtml(`−${formatMoney(payload.discount, currency)}`)) : ''}
-      ${detailRow('Order total', `<span style="font-size:16px;color:${BRAND.primary};">${escapeHtml(formatMoney(payload.total, currency))}</span>`)}
-    </table>`;
+  const pay = paymentLabel(payload.paymentMethod);
 
   const html = layout({
     preheader: `Order ${orderId} received — payment instructions enclosed`,
     title: 'Order confirmation',
     bodyHtml: `
       <p style="margin:0 0 12px 0;">${greeting(payload.name)}</p>
-      <p style="margin:0 0 12px 0;">Thank you for your research supply order. We have received <strong>${escapeHtml(orderId)}</strong> and will begin fulfilment once payment is verified.</p>
-      ${detailsTable([
-        ['Order reference', `<span style="font-family:ui-monospace,Consolas,monospace;">${escapeHtml(orderId)}</span>`],
-        ['Payment method', escapeHtml(paymentLabel)],
-        ['Shipping method', escapeHtml(payload.shippingMethod || 'Tracked 24')],
-        ['Delivery address', `<div style="white-space:pre-wrap;font-weight:500;">${escapeHtml(payload.shippingAddress || '—')}</div>`],
+      <p style="margin:0 0 12px 0;">Thank you for your research supply order. Below is a full record of what you submitted.</p>
+      ${submittedDetails([
+        ['Order reference', mono(orderId), { html: true, always: true }],
+        ['Customer name', payload.name, { always: true }],
+        ['Email', mailtoLink(payload.email), { html: true, always: true }],
+        ['Phone', payload.phone],
+        ['Payment method', pay, { always: true }],
+        ['Shipping method', payload.shippingMethod, { always: true }],
+        ['Shipping ETA', payload.shippingEta],
+        ['Delivery address', payload.shippingAddress, { multiline: true, always: true }],
+        ['Order notes', payload.notes, { multiline: true }],
       ])}
       <h3 style="margin:20px 0 0 0;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#0f172a;">Order contents</h3>
       ${itemsTable(payload.items, currency)}
-      ${totalsHtml}
+      ${orderTotalsHtml(payload)}
       <div style="margin:18px 0;padding:14px 16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;font-size:13px;color:#1e3a5f;">
         <strong>Next step — complete payment</strong><br />
         ${
@@ -323,25 +382,28 @@ export function buildOrderUserEmail(payload: NotifyPayload) {
 export function buildOrderAdminEmail(payload: NotifyPayload) {
   const currency = payload.currency || 'GBP';
   const orderId = payload.orderId || 'PHR-ORDER';
+  const pay = paymentLabel(payload.paymentMethod) || payload.paymentMethod || '—';
   const html = layout({
     preheader: `New order ${orderId} from ${payload.email}`,
     title: 'New storefront order',
     bodyHtml: `
-      <p style="margin:0 0 12px 0;">A new research order was placed on the storefront and requires payment verification.</p>
-      ${detailsTable([
-        ['Order', `<span style="font-family:ui-monospace,Consolas,monospace;">${escapeHtml(orderId)}</span>`],
-        ['Customer', escapeHtml(payload.name || '—')],
-        ['Email', `<a href="mailto:${escapeHtml(payload.email)}" style="color:${BRAND.primary};">${escapeHtml(payload.email)}</a>`],
-        ['Phone', escapeHtml(payload.phone || '—')],
-        ['Institution', escapeHtml(payload.institution || '—')],
-        ['Payment', escapeHtml(payload.paymentMethod || '—')],
-        ['Shipping', escapeHtml(payload.shippingMethod || '—')],
-        ['Address', `<div style="white-space:pre-wrap;font-weight:500;">${escapeHtml(payload.shippingAddress || '—')}</div>`],
-        ['Total', `<strong>${escapeHtml(formatMoney(payload.total, currency))}</strong>`],
+      <p style="margin:0 0 12px 0;">A new research order was placed on the storefront. Full checkout details:</p>
+      ${submittedDetails([
+        ['Order', mono(orderId), { html: true, always: true }],
+        ['Customer name', payload.name, { always: true }],
+        ['Email', mailtoLink(payload.email), { html: true, always: true }],
+        ['Phone', payload.phone],
+        ['Institution', payload.institution],
+        ['Payment method', pay, { always: true }],
+        ['Payment status', payload.paymentStatus],
+        ['Shipping method', payload.shippingMethod, { always: true }],
+        ['Shipping ETA', payload.shippingEta],
+        ['Delivery address', payload.shippingAddress, { multiline: true, always: true }],
+        ['Order notes', payload.notes, { multiline: true }],
       ])}
       <h3 style="margin:20px 0 0 0;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#0f172a;">Line items</h3>
       ${itemsTable(payload.items, currency)}
-      ${payload.notes ? `<p style="margin:12px 0 0 0;"><strong>Notes:</strong> ${escapeHtml(payload.notes)}</p>` : ''}
+      ${orderTotalsHtml(payload)}
       ${ctaButton('Email payment details to customer', `mailto:${encodeURIComponent(payload.email)}?subject=${encodeURIComponent(`Payment details for ${orderId}`)}`)}
     `,
   });
@@ -360,13 +422,21 @@ export function buildOrderStatusUserEmail(payload: NotifyPayload) {
     title: 'Order status update',
     bodyHtml: `
       <p style="margin:0 0 12px 0;">${greeting(payload.name)}</p>
-      <p style="margin:0 0 12px 0;">Your laboratory order status has been updated.</p>
-      ${detailsTable([
-        ['Order reference', `<span style="font-family:ui-monospace,Consolas,monospace;">${escapeHtml(orderId)}</span>`],
-        ['New status', escapeHtml(status)],
-        ['Payment status', escapeHtml(payload.paymentStatus || '—')],
+      <p style="margin:0 0 12px 0;">Your laboratory order status has been updated. Current details:</p>
+      ${submittedDetails([
+        ['Order reference', mono(orderId), { html: true, always: true }],
+        ['Customer name', payload.name],
+        ['Email', mailtoLink(payload.email), { html: true, always: true }],
+        ['Phone', payload.phone],
+        ['Fulfilment status', status, { always: true }],
+        ['Payment status', payload.paymentStatus],
+        ['Payment method', paymentLabel(payload.paymentMethod) || payload.paymentMethod],
+        ['Shipping method', payload.shippingMethod],
+        ['Delivery address', payload.shippingAddress, { multiline: true }],
+        ['Notes / message', payload.message || payload.notes, { multiline: true }],
       ])}
-      ${payload.message ? `<p style="margin:12px 0 0 0;">${escapeHtml(payload.message)}</p>` : ''}
+      ${payload.items?.length ? `<h3 style="margin:20px 0 0 0;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#0f172a;">Order contents</h3>${itemsTable(payload.items, payload.currency || 'GBP')}` : ''}
+      ${(payload.total != null || payload.subtotal != null) ? orderTotalsHtml(payload) : ''}
       ${ctaButton('Track order', `${BRAND.site}/track`)}
     `,
   });
@@ -383,12 +453,18 @@ export function buildOrderStatusAdminEmail(payload: NotifyPayload) {
     preheader: `Status change for ${orderId}`,
     title: 'Order status change copy',
     bodyHtml: `
-      <p style="margin:0 0 12px 0;">Customer notification was sent for an order status change.</p>
-      ${detailsTable([
-        ['Order', escapeHtml(orderId)],
-        ['Customer', escapeHtml(payload.email)],
-        ['Status', escapeHtml(status)],
-        ['Payment status', escapeHtml(payload.paymentStatus || '—')],
+      <p style="margin:0 0 12px 0;">Customer notification was sent for an order status change. Snapshot of details included:</p>
+      ${submittedDetails([
+        ['Order', mono(orderId), { html: true, always: true }],
+        ['Customer name', payload.name],
+        ['Email', mailtoLink(payload.email), { html: true, always: true }],
+        ['Phone', payload.phone],
+        ['Fulfilment status', status, { always: true }],
+        ['Payment status', payload.paymentStatus],
+        ['Payment method', paymentLabel(payload.paymentMethod) || payload.paymentMethod],
+        ['Shipping method', payload.shippingMethod],
+        ['Delivery address', payload.shippingAddress, { multiline: true }],
+        ['Notes / message', payload.message || payload.notes, { multiline: true }],
       ])}
     `,
   });

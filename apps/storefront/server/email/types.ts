@@ -30,6 +30,7 @@ export interface NotifyPayload {
   paymentMethod?: string;
   paymentStatus?: string;
   shippingMethod?: string;
+  shippingEta?: string;
   shippingAddress?: string;
   items?: OrderLineItem[];
   subtotal?: number;

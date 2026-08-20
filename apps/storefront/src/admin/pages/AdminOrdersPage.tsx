@@ -43,6 +43,11 @@ export const AdminOrdersPage: React.FC = () => {
           orderId: updated.order_number || updated.id,
           orderStatus: updated.status || status,
           paymentStatus: updated.payment_status || undefined,
+          paymentMethod: updated.payment_method || undefined,
+          shippingMethod: updated.shipping_method || undefined,
+          phone: updated.contact_phone || undefined,
+          total: updated.total ?? undefined,
+          currency: 'GBP',
         });
         if (!notify.ok) {
           setError(`Status saved, but email failed: ${notify.error || 'unknown error'}`);
