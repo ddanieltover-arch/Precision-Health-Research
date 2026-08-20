@@ -1,0 +1,8 @@
+{
+  "name": "Precision Health Research",
+  "description": "High-purity laboratory research compounds and peptides storefront with verified batch COAs, reconstitution calculator, and research library.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

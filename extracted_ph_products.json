@@ -1,0 +1,547 @@
+[
+  {
+    "link": "/products/bac-water",
+    "title": "BAC WATER",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/bac-water.png"
+  },
+  {
+    "link": "/products/sermorelin-acetate",
+    "title": "Sermorelin Acetate",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/sermorelin-acetate.png"
+  },
+  {
+    "link": "/products/hgh-191aa-somatropin",
+    "title": "HGH 191AA (Somatropin)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/hgh-191aa-somatropin.png"
+  },
+  {
+    "link": "/products/cjc-1295-without-dac-ipa-5mg",
+    "title": "CJC-1295 without DAC + IPA 5mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/cjc-1295-without-dac-ipa-5mg.png"
+  },
+  {
+    "link": "/products/fat-blaster-lc526",
+    "title": "Fat Blaster (LC526)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/fat-blaster-lc526.png"
+  },
+  {
+    "link": "/products/hmg",
+    "title": "HMG",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/hmg.png"
+  },
+  {
+    "link": "/products/mgf",
+    "title": "MGF",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/mgf.png"
+  },
+  {
+    "link": "/products/hgh-fragment-176-191",
+    "title": "HGH Fragment 176-191",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/hgh-fragment-176-191.png"
+  },
+  {
+    "link": "/products/mt-2-melanotan-2-acetate",
+    "title": "MT-2 (Melanotan 2 Acetate)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/mt-2-melanotan-2-acetate.png"
+  },
+  {
+    "link": "/products/mt-1",
+    "title": "MT-1",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/mt-1.png"
+  },
+  {
+    "link": "/products/cerebrolysin",
+    "title": "Cerebrolysin",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/cerebrolysin.png"
+  },
+  {
+    "link": "/products/hcg",
+    "title": "HCG",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/hcg.png"
+  },
+  {
+    "link": "/products/ss-31",
+    "title": "SS-31",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/ss-31.png"
+  },
+  {
+    "link": "/products/ahk-cu",
+    "title": "AHK-CU",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/ahk-cu.png"
+  },
+  {
+    "link": "/products/cjc-1295-without-dac",
+    "title": "CJC-1295 without DAC",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/cjc-1295-without-dac.png"
+  },
+  {
+    "link": "/products/cjc-1295-with-dac",
+    "title": "CJC-1295 with DAC",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/cjc-1295-with-dac.png"
+  },
+  {
+    "link": "/products/cagrilintide",
+    "title": "Cagrilintide",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/cagrilintide.png"
+  },
+  {
+    "link": "/products/nad-plus",
+    "title": "NAD+",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-nad-plus-hero-1779584196468.png"
+  },
+  {
+    "link": "/products/semaglutide",
+    "title": "Semaglutide",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/semaglutide.png"
+  },
+  {
+    "link": "/products/retatrutide",
+    "title": "Retatrutide",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/retatrutide.png"
+  },
+  {
+    "link": "/products/thymosin-a1-10mg",
+    "title": "Thymosin-α1 10mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/thymosin-a1-10mg.png"
+  },
+  {
+    "link": "/products/tb-500-10mg",
+    "title": "TB-500 10mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/tb-500-10mg.png"
+  },
+  {
+    "link": "/products/snap-8-10mg",
+    "title": "SNAP-8 10mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/snap-8-10mg.png"
+  },
+  {
+    "link": "/products/pt-141-10mg",
+    "title": "PT-141 10mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/pt-141-10mg.png"
+  },
+  {
+    "link": "/products/peptide-t-60mg",
+    "title": "Peptide-T 60mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/peptide-t-60mg.png"
+  },
+  {
+    "link": "/products/peptide-t-30mg",
+    "title": "Peptide-T 30mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-peptide-t-30mg-hero-1779584198922.png"
+  },
+  {
+    "link": "/products/peptide-t-15mg",
+    "title": "Peptide-T 15mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-peptide-t-15mg-hero-1779584201033.png"
+  },
+  {
+    "link": "/products/peptide-t-100mg",
+    "title": "Peptide-T 100mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-peptide-t-100mg-hero-1779584202155.png"
+  },
+  {
+    "link": "/products/peptide-s-15mg",
+    "title": "Peptide-S 15mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-peptide-s-15mg-hero-1779584202911.png"
+  },
+  {
+    "link": "/products/peptide-s-10mg",
+    "title": "Peptide-S 10mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-peptide-s-10mg-hero-1779584203965.png"
+  },
+  {
+    "link": "/products/bacteriostatic-water-30ml",
+    "title": "Bacteriostatic Water",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/bacteriostatic-water-30ml.png"
+  },
+  {
+    "link": "/products/yk11-10mg-50-tablets",
+    "title": "YK11 (10MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/yk11-10mg-50-tablets.png"
+  },
+  {
+    "link": "/products/sr9009-10mg-50-tablets",
+    "title": "SR9009 (10MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-sr9009-hero-1779530516781.jpg"
+  },
+  {
+    "link": "/products/rad140-10mg-50-tablets",
+    "title": "RAD140 (10MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-rad140-hero-1779530597763.jpg"
+  },
+  {
+    "link": "/products/mk-906-5mg-50-tablets",
+    "title": "MK-906 (5MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-mk-906-hero-1779530784704.jpg"
+  },
+  {
+    "link": "/products/mk-677-10mg-50-tablets",
+    "title": "MK-677 (10MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-mk-677-hero-1779530620912.jpg"
+  },
+  {
+    "link": "/products/mk-2866-10mg-50-tablets",
+    "title": "MK-2866 (10MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-mk-2866-hero-1779530856100.jpg"
+  },
+  {
+    "link": "/products/lgd-4033-10mg-50-tablets",
+    "title": "LGD-4033 (10MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-lgd-4033-hero-1779530903503.jpg"
+  },
+  {
+    "link": "/products/win-depot-50mg",
+    "title": "WIN DEPOT (50MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/win-depot-50mg.png"
+  },
+  {
+    "link": "/products/trenbolone-enanthate-200mg",
+    "title": "TRENBOLONE ENANTHATE (200MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/trenbolone-enanthate-200mg.png"
+  },
+  {
+    "link": "/products/tren-e-200mg",
+    "title": "TREN E (200MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/tren-e-200mg.jpg"
+  },
+  {
+    "link": "/products/tren-a-100mg",
+    "title": "TREN A (100MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/tren-a-100mg.jpg"
+  },
+  {
+    "link": "/products/tnt-400-400mg",
+    "title": "TNT 400 (400MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/tnt-400-400mg.jpg"
+  },
+  {
+    "link": "/products/tnt-200-200mg",
+    "title": "TNT 200 (200MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/tnt-200-200mg.jpg"
+  },
+  {
+    "link": "/products/testosterone-undecanoate-250mg",
+    "title": "TESTOSTERONE UNDECANOATE (250MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/testosterone-undecanoate-250mg.jpg"
+  },
+  {
+    "link": "/products/testosterone-trenbolone-400mg",
+    "title": "TESTOSTERONE TRENBOLONE (400MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/testosterone-trenbolone-400mg.jpg"
+  },
+  {
+    "link": "/products/tb-500",
+    "title": "TB-500 (Thymosin Beta-4 synthetic fragment)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-tb-500-hero-1779562911590.png"
+  },
+  {
+    "link": "/products/peptide-31-60mg",
+    "title": "Peptide-31 60mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/peptide-31-60mg.png"
+  },
+  {
+    "link": "/products/klow-10mg-10mg-10mg-50mg",
+    "title": "KLOW 10mg/10mg/10mg/50mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/klow-10mg-10mg-10mg-50mg.png"
+  },
+  {
+    "link": "/products/glutathione-1200mg",
+    "title": "Glutathione 1200mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/glutathione-1200mg.png"
+  },
+  {
+    "link": "/products/glow-10mg-70mg-10mg",
+    "title": "GLOW 10mg/70mg/10mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/glow-10mg-70mg-10mg.png"
+  },
+  {
+    "link": "/products/epitalon-50mg",
+    "title": "Epitalon 50mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/epitalon-50mg.png"
+  },
+  {
+    "link": "/products/dsip-5mg",
+    "title": "DSIP 5mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/dsip-5mg.png"
+  },
+  {
+    "link": "/products/dsip-10mg",
+    "title": "DSIP 10mg",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/dsip-10mg.png"
+  },
+  {
+    "link": "/products/gw-501516-10mg-50-tablets",
+    "title": "GW-501516 (10MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-gw-501516-hero-1779530985049.jpg"
+  },
+  {
+    "link": "/products/flibanserin-100mg-50-tablets",
+    "title": "FLIBANSERIN (100MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-flibanserin-hero-1779531038277.jpg"
+  },
+  {
+    "link": "/products/bacteriostatic-water",
+    "title": "Bacteriostatic Water",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-bacteriostatic-water-hero-1779531080681.jpg"
+  },
+  {
+    "link": "/products/andarine-s4-25mg-50-tablets",
+    "title": "ANDARINE S4 (25MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-andarine-s4-hero-1779531125576.jpg"
+  },
+  {
+    "link": "/products/aicar-10mg-50-tablets",
+    "title": "AICAR (10MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/aicar-10mg-50-tablets.png"
+  },
+  {
+    "link": "/products/acetic-acid",
+    "title": "Acetic Acid",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-acetic-acid-hero-1779531175424.jpg"
+  },
+  {
+    "link": "/products/testosterone-propionate-100mg",
+    "title": "TESTOSTERONE PROPIONATE (100MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/testosterone-propionate-100mg.png"
+  },
+  {
+    "link": "/products/testosterone-mix-300mg",
+    "title": "TESTOSTERONE MIX (300MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/testosterone-mix-300mg.jpg"
+  },
+  {
+    "link": "/products/testosterone-enanthate-300mg",
+    "title": "TESTOSTERONE ENANTHATE (300MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/testosterone-enanthate-300mg.jpg"
+  },
+  {
+    "link": "/products/testosterone-cypionate-300mg",
+    "title": "TESTOSTERONE CYPIONATE (300MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-testosterone-cypionate-hero-1779531335398.jpg"
+  },
+  {
+    "link": "/products/testosterone-400-400mg",
+    "title": "TESTOSTERONE 400 (400MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-testosterone-400-hero-1779531385357.jpg"
+  },
+  {
+    "link": "/products/test-propionate-100mg",
+    "title": "TEST PROPIONATE (100MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-test-propionate-hero-1779531504933.jpg"
+  },
+  {
+    "link": "/products/test-enanthate-250mg",
+    "title": "TEST ENANTHATE (250MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-test-enanthate-hero-1779531601078.jpg"
+  },
+  {
+    "link": "/products/test-cypionate-250mg",
+    "title": "TEST CYPIONATE (250MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-test-cypionate-250-hero-1779531641871.jpg"
+  },
+  {
+    "link": "/products/t400-400mg",
+    "title": "T400 (400MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-t400-hero-1779531725252.jpg"
+  },
+  {
+    "link": "/products/sustanon-250mg",
+    "title": "SUSTANON (250MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-sustanon-250mg-hero-1779507582506.png"
+  },
+  {
+    "link": "/products/primobolan-100mg",
+    "title": "PRIMOBOLAN (100MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-primobolan-hero-1779531788538.jpg"
+  },
+  {
+    "link": "/products/primo-200mg",
+    "title": "PRIMO (200MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-primo-200-hero-1779531933745.jpg"
+  },
+  {
+    "link": "/products/primo-100mg",
+    "title": "PRIMO (100MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-primo-100-hero-1779532313843.jpg"
+  },
+  {
+    "link": "/products/npp-150mg",
+    "title": "NPP (150MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-npp-150-hero-1779532080896.jpg"
+  },
+  {
+    "link": "/products/npp-100mg",
+    "title": "NPP (100MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-npp-100-hero-1779532155151.jpg"
+  },
+  {
+    "link": "/products/nandrolone-decanoate-300mg",
+    "title": "NANDROLONE DECANOATE (300MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-nandrolone-decanoate-hero-1779532219439.jpg"
+  },
+  {
+    "link": "/products/masteron-p-100mg",
+    "title": "MASTERON P (100MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-masteron-p-hero-1779531725252.jpg"
+  },
+  {
+    "link": "/products/masteron-enanthate-200mg",
+    "title": "MASTERON ENANTHATE (200MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-masteron-enanthate-hero-1779531891294.jpg"
+  },
+  {
+    "link": "/products/eq-250mg",
+    "title": "EQ (250MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-eq-250-hero-1779531959685.jpg"
+  },
+  {
+    "link": "/products/drostanolone-propionate-100mg",
+    "title": "DROSTANOLONE PROPIONATE (100MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-drostanolone-propionate-hero-1779532399609.jpg"
+  },
+  {
+    "link": "/products/drostanolone-enanthate-200mg",
+    "title": "DROSTANOLONE ENANTHATE (200MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-drostanolone-enanthate-hero-1779532485850.jpg"
+  },
+  {
+    "link": "/products/deca-durabolin-250mg",
+    "title": "DECA DURABOLIN (250MG)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-deca-durabolin-hero-1779532191778.jpg"
+  },
+  {
+    "link": "/products/zio-shredz-20mg-50-tablets",
+    "title": "ZIO SHREDZ (20MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/zio-shredz-20mg-50-tablets.png"
+  },
+  {
+    "link": "/products/winstrol-25mg-50-tablets",
+    "title": "WINSTROL (25MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/winstrol-25mg-50-tablets.png"
+  },
+  {
+    "link": "/products/winstrol-20mg-50-tablets",
+    "title": "WINSTROL (20MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/winstrol-20mg-50-tablets.png"
+  },
+  {
+    "link": "/products/viagra-50mg-50-tablets",
+    "title": "VIAGRA (50MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/viagra-50mg-50-tablets.png"
+  },
+  {
+    "link": "/products/turinabol-20mg-50-tablets",
+    "title": "TURINABOL (20MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/turinabol-20mg-50-tablets.png"
+  },
+  {
+    "link": "/products/t3-25mcg-50-tablets",
+    "title": "T3 (25MCG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-t3-25mcg-50-tablets-hero-1779695798241.png"
+  },
+  {
+    "link": "/products/t-bol-25mg-50-tablets",
+    "title": "T-BOL (25MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-t-bol-25mg-50-tablets-hero-1779584612461.png"
+  },
+  {
+    "link": "/products/superman-50mg-50-tablets",
+    "title": "SUPERMAN (50MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-superman-50mg-50-tablets-hero-1779584823938.png"
+  },
+  {
+    "link": "/products/superdrol-25mg-50-tablets",
+    "title": "SUPERDROL (25MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-superdrol-25mg-50-tablets-hero-1779584826315.png"
+  },
+  {
+    "link": "/products/superdrol-10mg-50-tablets",
+    "title": "SUPERDROL (10MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-superdrol-10mg-50-tablets-hero-1779608307175.png"
+  },
+  {
+    "link": "/products/proviron-25mg-50-tablets",
+    "title": "PROVIRON (25MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-proviron-25mg-50-tablets-hero-1779606486089.png"
+  },
+  {
+    "link": "/products/proviron-20mg-50-tablets",
+    "title": "PROVIRON (20MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-proviron-20mg-50-tablets-hero-1779606488280.png"
+  },
+  {
+    "link": "/products/nolvadex-20mg-50-tablets",
+    "title": "NOLVADEX (20MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-nolvadex-20mg-50-tablets-hero-1779608459680.png"
+  },
+  {
+    "link": "/products/halo-10mg-50-tablets",
+    "title": "HALO (10MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-halo-10mg-50-tablets-hero-1779608466051.png"
+  },
+  {
+    "link": "/products/dianabol-20mg-50-tablets",
+    "title": "DIANABOL (20MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-dianabol-20mg-50-tablets-hero-1779631819451.png"
+  },
+  {
+    "link": "/products/d-bol-25mg-50-tablets",
+    "title": "D-BOL (25MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-d-bol-25mg-50-tablets-hero-1779631820266.png"
+  },
+  {
+    "link": "/products/clomid-50mg-50-tablets",
+    "title": "CLOMID (50MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-clomid-50mg-50-tablets-hero-1779631821319.png"
+  },
+  {
+    "link": "/products/clenbuterol-50mcg-50-tablets",
+    "title": "CLENBUTEROL (50MCG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-clenbuterol-50mcg-50-tablets-hero-1779631821998.png"
+  },
+  {
+    "link": "/products/clenbuterol-100mcg-50-tablets",
+    "title": "CLENBUTEROL (100MCG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-clenbuterol-100mcg-50-tablets-hero-1779695529495.png"
+  },
+  {
+    "link": "/products/cialis-30mg-50-tablets",
+    "title": "CIALIS (30MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-cialis-30mg-50-tablets-hero-1779631993339.png"
+  },
+  {
+    "link": "/products/cialis-25mg-50-tablets",
+    "title": "CIALIS (25MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-cialis-25mg-50-tablets-hero-1779631995736.png"
+  },
+  {
+    "link": "/products/aromasin-25mg-50-tablets",
+    "title": "AROMASIN (25MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-aromasin-25mg-50-tablets-hero-1779631998839.png"
+  },
+  {
+    "link": "/products/arimidex-1mg-50-tablets",
+    "title": "ARIMIDEX (1MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-arimidex-1mg-50-tablets-hero-1779631999894.png"
+  },
+  {
+    "link": "/products/anavar-25mg-50-tablets",
+    "title": "ANAVAR (25MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-anavar-25mg-50-tablets-hero-1779632001904.png"
+  },
+  {
+    "link": "/products/anavar-20mg-50-tablets",
+    "title": "ANAVAR (20MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-anavar-20mg-50-tablets-hero-1779695491252.png"
+  },
+  {
+    "link": "/products/anavar-10mg-60-tablets",
+    "title": "ANAVAR (10MG) (60 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/phr-anavar-10mg-60-tablets-hero-1779695492822.png"
+  },
+  {
+    "link": "/products/anadrol-50mg-50-tablets",
+    "title": "ANADROL (50MG) (50 TABLETS)",
+    "img": "https://tbgmkqklkshkjfhcqtzz.supabase.co/storage/v1/object/public/catalog-heroes/anadrol-50mg-50-tablets.png"
+  }
+]

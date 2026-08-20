@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --brand-primary: #335e90;
+    --brand-primary-hover: #264a73;
+    --brand-primary-dark: #1b3552;
+    --brand-accent: #0284c7;
+    --brand-tint: #f0f6fc;
+    --brand-border: #e2e8f0;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .font-display {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  .font-mono-code {
+    font-family: 'Space Grotesk', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Subtle Shimmer & Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2.5s infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/*
+ * Smartsupp ships with z-index: 2147483647, which covers the cookie banner on mobile.
+ * While consent is pending, keep live chat one layer below the banner.
+ */
+html.cookie-consent-pending #chat-application,
+html.cookie-consent-pending iframe[src*="smartsupp"],
+html.cookie-consent-pending [id^="smartsupp"],
+html.cookie-consent-pending [class*="smartsupp-widget"],
+html.cookie-consent-pending [class*="smartsupp-messenger"] {
+  z-index: 2147483646 !important;
+}
