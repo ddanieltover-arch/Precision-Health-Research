@@ -511,7 +511,7 @@ export const Header: React.FC = () => {
             <div
               role="menu"
               aria-label="Info"
-              className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 py-2.5"
+              className="flex flex-nowrap items-center justify-center gap-0.5 sm:gap-1 py-2.5 overflow-x-auto"
             >
               {infoLinks.map((link) => {
                 const Icon = link.icon;
@@ -523,7 +523,7 @@ export const Header: React.FC = () => {
                     to={link.to}
                     role="menuitem"
                     onClick={() => setIsInfoMenuOpen(false)}
-                    className={`flex items-center gap-1.5 px-3 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap ${
+                    className={`flex items-center gap-1 px-2 sm:px-2.5 py-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider rounded-lg transition-all whitespace-nowrap shrink-0 ${
                       isActive
                         ? 'bg-white text-[#1b3552] shadow-sm border border-slate-200/90'
                         : 'text-slate-600 hover:text-[#1b3552] hover:bg-white/80 border border-transparent'

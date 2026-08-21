@@ -21,7 +21,7 @@ export const openSmartsuppChat = () => {
   }
 };
 
-/** Loads Smartsupp for Lab Support panel — no floating chat launcher. */
+/** Loads Smartsupp; floating launcher stacked above Lab Support via offsetY. */
 export const SmartsuppChat: React.FC = () => {
   useEffect(() => {
     if (!SMARTSUPP_KEY) return;
@@ -29,18 +29,20 @@ export const SmartsuppChat: React.FC = () => {
     window._smartsupp = window._smartsupp || {};
     window._smartsupp.key = SMARTSUPP_KEY;
     window._smartsupp.color = '#335e90';
-    window._smartsupp.orientation = 'left';
-    // No floating Chat button — open only via Lab Support
+    // Same corner as Lab Support; offsetY stacks this launcher above it
+    window._smartsupp.orientation = 'right';
     window._smartsupp.hideBanner = true;
 
     try {
       if (window.matchMedia && window.matchMedia('(max-width: 767px)').matches) {
-        window._smartsupp.offsetY = 75;
+        // Clear mobile bottom nav + Lab Support (~80px + ~52px + gap)
+        window._smartsupp.offsetY = 148;
       } else {
-        window._smartsupp.offsetY = 20;
+        // Clear Lab Support at bottom-6 (~24px + ~52px + gap)
+        window._smartsupp.offsetY = 88;
       }
     } catch {
-      window._smartsupp.offsetY = 20;
+      window._smartsupp.offsetY = 88;
     }
 
     const existingScript = document.getElementById('smartsupp-loader-script');

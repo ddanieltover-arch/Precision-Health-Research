@@ -64,6 +64,7 @@ export const FloatingSupport: React.FC = () => {
     addToast('Live Chat Connected', 'Smartsupp laboratory support channel opened.', 'info');
   };
 
+  // Lowest in the floating stack: Back to top → Smartsupp → Lab Support
   return (
     <div id="floating-support-container" className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-40">
       

@@ -38,7 +38,7 @@ export const BackToTop: React.FC = () => {
       onClick={scrollToTop}
       aria-label="Back to top"
       title="Back to top"
-      className="fixed bottom-34 md:bottom-20 right-4 md:right-6 z-30 p-3 bg-white/95 backdrop-blur-md hover:bg-[#335e90] text-slate-700 hover:text-white rounded-full shadow-lg border border-slate-200/80 hover:border-[#335e90] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center group"
+      className="fixed bottom-52 md:bottom-40 right-4 md:right-6 z-30 p-3 bg-white/95 backdrop-blur-md hover:bg-[#335e90] text-slate-700 hover:text-white rounded-full shadow-lg border border-slate-200/80 hover:border-[#335e90] transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl active:scale-95 flex items-center justify-center group"
     >
       <ChevronUp className="w-5 h-5 transition-transform group-hover:-translate-y-0.5" />
       <span className="sr-only">Back to top</span>
