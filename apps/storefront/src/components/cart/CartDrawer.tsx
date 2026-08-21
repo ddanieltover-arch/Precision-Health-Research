@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { ProductImage } from '../common/ProductImage';
 import {
@@ -16,6 +16,8 @@ import {
   Tag,
   Check
 } from 'lucide-react';
+
+const COUPON_MIN_SUBTOTAL_GBP = 300;
 
 export const CartDrawer: React.FC = () => {
   const { 
@@ -36,6 +38,18 @@ export const CartDrawer: React.FC = () => {
   const [discountPercent, setDiscountPercent] = useState<number>(0);
   const [appliedPromo, setAppliedPromo] = useState<string>('');
 
+  useEffect(() => {
+    if (discountPercent > 0 && cartTotal < COUPON_MIN_SUBTOTAL_GBP) {
+      setDiscountPercent(0);
+      setAppliedPromo('');
+      addToast(
+        'Coupon Removed',
+        `Coupons require a subtotal of £${COUPON_MIN_SUBTOTAL_GBP}+.`,
+        'warning',
+      );
+    }
+  }, [cartTotal, discountPercent, addToast]);
+
   if (!isCartOpen) return null;
 
   const FREE_SHIPPING_THRESHOLD = FREE_SHIPPING_THRESHOLD_GBP;
@@ -45,10 +59,21 @@ export const CartDrawer: React.FC = () => {
 
   const discountAmount = cartTotal * (discountPercent / 100);
   const finalTotal = Math.max(0, cartTotal - discountAmount);
+  const amountNeededForCoupon = Math.max(0, COUPON_MIN_SUBTOTAL_GBP - cartTotal);
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
     const clean = promoCode.trim().toUpperCase();
+
+    if (cartTotal < COUPON_MIN_SUBTOTAL_GBP) {
+      addToast(
+        'Minimum Not Met',
+        `Coupons apply only on orders of £${COUPON_MIN_SUBTOTAL_GBP}+. Add ${formatPrice(amountNeededForCoupon)} more.`,
+        'warning',
+      );
+      return;
+    }
+
     if (clean === 'PRECISION10' || clean === 'RESEARCH10' || clean === 'LAB10') {
       setDiscountPercent(10);
       setAppliedPromo(clean);
@@ -222,16 +247,27 @@ export const CartDrawer: React.FC = () => {
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
                     placeholder="Coupon (e.g. PRECISION10)"
-                    className="w-full pl-8 pr-3 py-2 text-xs uppercase font-mono-code bg-slate-100 rounded-xl border border-slate-200 outline-none focus:border-[#335e90]"
+                    className="w-full pl-8 pr-3 py-2 text-xs uppercase font-mono-code bg-slate-100 rounded-xl border border-slate-200 outline-none focus:border-[#335e90] disabled:opacity-60"
+                    disabled={cartTotal < COUPON_MIN_SUBTOTAL_GBP}
                   />
                 </div>
                 <button
                   type="submit"
-                  className="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-colors"
+                  disabled={cartTotal < COUPON_MIN_SUBTOTAL_GBP}
+                  className="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Apply
                 </button>
               </form>
+              {cartTotal < COUPON_MIN_SUBTOTAL_GBP && (
+                <p className="text-[11px] text-slate-500 -mt-2">
+                  Coupons unlock at £{COUPON_MIN_SUBTOTAL_GBP}+ subtotal
+                  {amountNeededForCoupon > 0
+                    ? ` — add ${formatPrice(amountNeededForCoupon)} more`
+                    : ''}
+                  .
+                </p>
+              )}
 
               {appliedPromo && (
                 <div className="flex items-center justify-between text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
