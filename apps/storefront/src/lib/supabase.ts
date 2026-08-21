@@ -29,10 +29,12 @@ export const ADMIN_WRITE_KEY = 'phr_admin_write_key';
 
 export function getAdminWriteKey(): string {
   try {
-    return sessionStorage.getItem(ADMIN_WRITE_KEY) || '';
+    const fromSession = sessionStorage.getItem(ADMIN_WRITE_KEY);
+    if (fromSession) return fromSession;
   } catch {
-    return '';
+    /* ignore */
   }
+  return ((import.meta.env.VITE_ADMIN_PASSWORD as string) || '').trim();
 }
 
 export function setAdminWriteKey(key: string | null) {

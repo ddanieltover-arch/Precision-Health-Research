@@ -12,6 +12,9 @@
     },
     "api/admin-orders.ts": {
       "includeFiles": "server/**"
+    },
+    "api/admin-customers.ts": {
+      "includeFiles": "server/**"
     }
   },
   "rewrites": [

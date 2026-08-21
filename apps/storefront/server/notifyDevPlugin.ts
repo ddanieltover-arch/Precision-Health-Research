@@ -3,6 +3,7 @@ import { loadEnv } from 'vite';
 import { handleNotifyRequest } from './email/send.js';
 import { handleCreateOrderRequest } from './orders/createOrder.js';
 import { handleAdminOrderRequest } from './admin/ordersAdmin.js';
+import { handleAdminCustomerRequest } from './admin/customersAdmin.js';
 
 /**
  * Local /api/* endpoints so Resend + order persistence work during `vite` without Vercel CLI.
@@ -20,7 +21,12 @@ export function notifyDevPlugin(): Plugin {
 
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split('?')[0];
-        const allowed = new Set(['/api/notify', '/api/create-order', '/api/admin-orders']);
+        const allowed = new Set([
+          '/api/notify',
+          '/api/create-order',
+          '/api/admin-orders',
+          '/api/admin-customers',
+        ]);
         if (!url || !allowed.has(url)) {
           next();
           return;
@@ -49,14 +55,16 @@ export function notifyDevPlugin(): Plugin {
           }
           const raw = Buffer.concat(chunks).toString('utf8');
           const body = raw ? JSON.parse(raw) : {};
+          const adminKeyHeader = req.headers['x-phr-admin-key'];
+          const adminKey = Array.isArray(adminKeyHeader) ? adminKeyHeader[0] : adminKeyHeader;
 
           let status = 500;
           let result: unknown = { ok: false, error: 'Unhandled' };
 
           if (url === '/api/admin-orders') {
-            const adminKeyHeader = req.headers['x-phr-admin-key'];
-            const adminKey = Array.isArray(adminKeyHeader) ? adminKeyHeader[0] : adminKeyHeader;
             ({ status, result } = await handleAdminOrderRequest(body, adminKey));
+          } else if (url === '/api/admin-customers') {
+            ({ status, result } = await handleAdminCustomerRequest(body, adminKey));
           } else if (url === '/api/create-order') {
             ({ status, result } = await handleCreateOrderRequest(body));
           } else {

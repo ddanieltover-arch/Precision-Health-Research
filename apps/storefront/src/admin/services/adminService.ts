@@ -67,40 +67,79 @@ function requireClient() {
   return supabase;
 }
 
+function requireAdminKey() {
+  const adminKey = getAdminWriteKey();
+  if (!adminKey) {
+    throw new Error('Admin write session expired. Sign out and sign in again.');
+  }
+  return adminKey;
+}
+
+async function adminOrdersApi<T extends Record<string, unknown>>(body: Record<string, unknown>): Promise<T> {
+  const response = await fetch('/api/admin-orders', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-phr-admin-key': requireAdminKey(),
+    },
+    body: JSON.stringify(body),
+  });
+  let data: (T & { ok?: boolean; error?: string }) | null = null;
+  try {
+    data = (await response.json()) as T & { ok?: boolean; error?: string };
+  } catch {
+    data = null;
+  }
+  if (!response.ok || !data?.ok) {
+    throw new Error(data?.error || `Admin orders request failed (${response.status})`);
+  }
+  return data;
+}
+
+async function adminCustomersApi<T extends Record<string, unknown>>(body: Record<string, unknown>): Promise<T> {
+  const response = await fetch('/api/admin-customers', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-phr-admin-key': requireAdminKey(),
+    },
+    body: JSON.stringify(body),
+  });
+  let data: (T & { ok?: boolean; error?: string }) | null = null;
+  try {
+    data = (await response.json()) as T & { ok?: boolean; error?: string };
+  } catch {
+    data = null;
+  }
+  if (!response.ok || !data?.ok) {
+    throw new Error(data?.error || `Admin customers request failed (${response.status})`);
+  }
+  return data;
+}
+
 export async function getDashboardCounts() {
   const client = requireClient();
-  const [products, orders, customers, categories, pendingOrders] = await Promise.all([
+  const [products, categories, sales] = await Promise.all([
     client.from('products').select('id', { count: 'exact', head: true }),
-    client.from('orders').select('id', { count: 'exact', head: true }),
-    client.from('customers').select('id', { count: 'exact', head: true }),
     client.from('categories').select('id', { count: 'exact', head: true }),
-    client
-      .from('orders')
-      .select('id', { count: 'exact', head: true })
-      .in('status', ['pending', 'NEW', 'processing', 'Processing']),
+    adminOrdersApi<{
+      counts?: { orders: number; customers: number; pendingOrders: number };
+    }>({ action: 'dashboard' }),
   ]);
 
   return {
     products: products.count ?? 0,
-    orders: orders.count ?? 0,
-    customers: customers.count ?? 0,
+    orders: sales.counts?.orders ?? 0,
+    customers: sales.counts?.customers ?? 0,
     categories: categories.count ?? 0,
-    pendingOrders: pendingOrders.count ?? 0,
-    errors: [products.error, orders.error, customers.error, categories.error, pendingOrders.error]
-      .filter(Boolean)
-      .map((e) => e!.message),
+    pendingOrders: sales.counts?.pendingOrders ?? 0,
+    errors: [products.error, categories.error].filter(Boolean).map((e) => e!.message),
   };
 }
 
 export async function listRecentOrders(limit = 8) {
-  const client = requireClient();
-  const { data, error } = await client
-    .from('orders')
-    .select('id, order_number, status, total, contact_email, created_at, payment_status')
-    .order('created_at', { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-  return (data || []) as DbOrder[];
+  const data = await adminOrdersApi<{ orders?: DbOrder[] }>({ action: 'recent', limit });
+  return data.orders || [];
 }
 
 export async function listProducts() {
@@ -182,115 +221,42 @@ export async function deleteCategory(id: string) {
 }
 
 export async function listOrders() {
-  const client = requireClient();
-  const { data, error } = await client
-    .from('orders')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(500);
-  if (error) throw error;
-  return (data || []) as DbOrder[];
+  const data = await adminOrdersApi<{ orders?: DbOrder[] }>({ action: 'list', limit: 500 });
+  return data.orders || [];
 }
 
 export async function getOrder(id: string) {
-  const client = requireClient();
-  const { data, error } = await client.from('orders').select('*').eq('id', id).maybeSingle();
-  if (error) throw error;
-  return data as DbOrder | null;
+  const data = await adminOrdersApi<{ order?: DbOrder | null }>({ action: 'get', id });
+  return data.order ?? null;
 }
 
 export async function listOrderItems(orderId: string) {
-  const client = requireClient();
-  const { data, error } = await client
-    .from('order_items')
-    .select('id, order_id, product_id, variant_id, quantity, unit_price, products(name, slug)')
-    .eq('order_id', orderId);
-  if (error) throw error;
-  return data || [];
+  const data = await adminOrdersApi<{ items?: any[] }>({ action: 'items', id: orderId });
+  return data.items || [];
 }
 
 export async function updateOrder(id: string, patch: Partial<DbOrder>) {
-  const adminKey = getAdminWriteKey();
-  if (!adminKey) {
-    throw new Error('Admin write session expired. Sign out and sign in again.');
-  }
-
-  const response = await fetch('/api/admin-orders', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-phr-admin-key': adminKey,
-    },
-    body: JSON.stringify({ action: 'update', id, patch }),
-  });
-
-  let data: { ok?: boolean; order?: DbOrder; error?: string } | null = null;
-  try {
-    data = (await response.json()) as { ok?: boolean; order?: DbOrder; error?: string };
-  } catch {
-    data = null;
-  }
-
-  if (!response.ok || !data?.ok || !data.order) {
-    throw new Error(data?.error || `Order update failed (${response.status})`);
-  }
-
+  const data = await adminOrdersApi<{ order?: DbOrder }>({ action: 'update', id, patch });
+  if (!data.order) throw new Error('Order update returned no row');
   return data.order;
 }
 
 export async function deleteOrder(id: string) {
-  const adminKey = getAdminWriteKey();
-  if (!adminKey) {
-    throw new Error('Admin write session expired. Sign out and sign in again.');
-  }
-
-  const response = await fetch('/api/admin-orders', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-phr-admin-key': adminKey,
-    },
-    body: JSON.stringify({ action: 'delete', id }),
-  });
-
-  let data: { ok?: boolean; error?: string } | null = null;
-  try {
-    data = (await response.json()) as { ok?: boolean; error?: string };
-  } catch {
-    data = null;
-  }
-
-  if (!response.ok || !data?.ok) {
-    throw new Error(data?.error || `Order delete failed (${response.status})`);
-  }
+  await adminOrdersApi({ action: 'delete', id });
 }
 
 export async function listCustomers() {
-  const client = requireClient();
-  const { data, error } = await client
-    .from('customers')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(500);
-  if (error) throw error;
-  return (data || []) as DbCustomer[];
+  const data = await adminCustomersApi<{ customers?: DbCustomer[] }>({ action: 'list' });
+  return data.customers || [];
 }
 
 export async function getCustomer(id: string) {
-  const client = requireClient();
-  const { data, error } = await client.from('customers').select('*').eq('id', id).maybeSingle();
-  if (error) throw error;
-  return data as DbCustomer | null;
+  const data = await adminCustomersApi<{ customer?: DbCustomer | null }>({ action: 'get', id });
+  return data.customer ?? null;
 }
 
 export async function updateCustomer(id: string, patch: Partial<DbCustomer>) {
-  const client = requireClient();
-  const { data, error } = await client
-    .from('customers')
-    .update({ ...patch, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .select('*')
-    .maybeSingle();
-  if (error) throw error;
-  return data as DbCustomer;
+  const data = await adminCustomersApi<{ customer?: DbCustomer }>({ action: 'update', id, patch });
+  if (!data.customer) throw new Error('Customer update returned no row');
+  return data.customer;
 }
