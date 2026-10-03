@@ -27,6 +27,18 @@ import {
   Phone
 } from 'lucide-react';
 
+const PURCHASE_CONVERSION_SEND_TO = 'AW-18388882877/7ek2CKu2u48dEL2rwMBE';
+
+function trackPurchaseConversion(transactionId: string, value: number) {
+  if (typeof window.gtag !== 'function') return;
+  window.gtag('event', 'conversion', {
+    send_to: PURCHASE_CONVERSION_SEND_TO,
+    value,
+    currency: 'GBP',
+    transaction_id: transactionId,
+  });
+}
+
 export const CheckoutModal: React.FC = () => {
   const { 
     cart, 
@@ -206,6 +218,7 @@ export const CheckoutModal: React.FC = () => {
 
       setOrderId(confirmedOrderId);
       setConfirmedTotal(grandTotal);
+      trackPurchaseConversion(confirmedOrderId, grandTotal);
       setStep('confirmation');
       clearCart();
     } catch (err) {
